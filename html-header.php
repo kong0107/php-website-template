@@ -80,7 +80,7 @@
     <link rel="icon" href="./img/black.svg">
     <link rel="apple-touch-icon" href="./img/black.svg">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.6.8/dist/all.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.1/dist/all.js"></script>
     <script src="./js/main.js?time=<?=time()?>"></script>
     <link rel="stylesheet" href="./css/main.css?time=<?=time()?>">
 </head>

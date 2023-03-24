@@ -164,6 +164,17 @@ function jwt_decode($token) {
     ];
 }
 
+function parse_dataurl($url) {
+    if(preg_match('/^data:(\w+)\/([\w\.\-]+);base64,/', $url, $matches)) {
+        return array(
+            'type' => $matchs[0],
+            'subtype' => $matches[1],
+            'base64' => substr($url, strlen($matches[0]))
+        );
+    }
+    else throw new Exception('not a data URL');
+}
+
 
 /******** 載入字典、商品分類、… ********/
 
