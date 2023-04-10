@@ -12,11 +12,8 @@ require 'html-header.php';
 ?>
 
 <div id="terms"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-    fetchText('data/terms.md')
-    .then(md => $('#terms').innerHTML = marked.parse(md));
+    loadMarkdownToElement('data/terms.md', '#terms');
 </script>
 
 <?php require 'html-footer.php'; ?>

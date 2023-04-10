@@ -8,15 +8,12 @@ $page_info = [
 ];
 
 require 'html-header.php';
-
+// 本檔之格式同於 `privacy.php` 和 `terms.php` 。
 ?>
 
 <div id="about"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-    fetchText('data/about.md')
-    .then(md => $('#about').innerHTML = marked.parse(md));
+    loadMarkdownToElement('data/about.md', '#about');
 </script>
 
 <?php require 'html-footer.php'; ?>

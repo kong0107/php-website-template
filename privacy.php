@@ -12,11 +12,8 @@ require 'html-header.php';
 ?>
 
 <div id="privacy"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-    fetchText('data/privacy.md')
-    .then(md => $('#privacy').innerHTML = marked.parse(md));
+    loadMarkdownToElement('data/privacy.md', '#privacy');
 </script>
 
 <?php require 'html-footer.php'; ?>
