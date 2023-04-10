@@ -8,9 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= SITE_NAME ?>管理後臺</title>
     <base href="../"><!-- 為了圖片的相對路徑。注意也因此： HTML 和 JS 用的路徑基準是這個，但在 PHP 則不是。 -->
-    <link rel="icon" href="img/black.svg">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.1/dist/all.js"></script>
+    <link rel="icon" href="https://fakeimg.pl/256x256/?text=favicon">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.2/dist/all.js"></script>
     <script src="js/main.js?time=<?=time()?>"></script>
     <link rel="stylesheet" href="css/main.css?time=<?=time()?>">
 </head>

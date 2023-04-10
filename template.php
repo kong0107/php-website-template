@@ -40,7 +40,7 @@ $Get->convert(['foo' => 'bool', 'messages' => 'array']);
 $page_info = [
     'title' => '範例頁面', //
     'description' => '這一行會出現在 HTML 檔頭。',
-    'image' => './img/gray.svg',
+    'image' => 'https://fakeimg.pl/256x256/?font=noto&text=%E7%AF%84%E4%BE%8B',
     'itemtype' => 'WebPage',
     'breadcrumb_list' => []
 ];

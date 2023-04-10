@@ -11,6 +11,12 @@ require 'html-header.php';
 // 可參考： https://ecssl.pchome.com.tw/sys/cflowex/index/staticPage/CLAUSE
 ?>
 
-<div class="markdown"><?= file_get_contents('data/terms.md') ?></div>
+<div id="terms"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    fetchText('data/terms.md')
+    .then(md => $('#terms').innerHTML = marked.parse(md));
+</script>
 
 <?php require 'html-footer.php'; ?>
