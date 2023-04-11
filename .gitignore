@@ -1,4 +1,9 @@
 vendor/
-logs/*.log
-config.php
-file/*/
+
+include/config.php
+
+logs/*
+!logs/.htaccess
+
+file/*
+!file/.gitkeep

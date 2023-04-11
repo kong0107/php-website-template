@@ -24,17 +24,25 @@ listen(document, 'DOMContentLoaded', () => {
  */
 const loadMarkdownToElement = (() => {
     let promise; // 只在需要的時候才動態載入外部資源。
+    let parser;
     return function(source, target) {
-        if(!promise) promise = new Promise((onload, onerror) => {
-            document.head.append(createElementFromJsonML(
-                ['script', {
-                    src: 'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
-                    onload, onerror
-                }]
-            ));
-        });
+        if(!promise) {
+            promise = new Promise((onload, onerror) => {
+                document.head.append(createElementFromJsonML(
+                    ['script', {
+                        src: 'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
+                        onload, onerror
+                    }]
+                ));
+            });
+            parser = new DOMParser();
+        }
         if(!(target instanceof Element)) target = $(target);
         Promise.all([fetchText(source), promise])
-        .then(([md]) => target.innerHTML = marked.parse(md));
+        .then(([md]) => {
+            const html = marked.parse(md);
+            const doc = parser.parseFromString(html, 'text/html');
+            target.replaceChildren(...doc.body.childNodes)
+        });
     }
 })();
