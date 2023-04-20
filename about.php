@@ -11,9 +11,8 @@ require 'html-header.php';
 // 本檔之格式同於 `privacy.php` 和 `terms.php` 。
 ?>
 
-<div id="about"></div>
-<script>
-    loadMarkdownToElement('data/about.md', '#about');
-</script>
+<div class="markdown">
+    <?php readfile('data/about.md'); ?>
+</div>
 
 <?php require 'html-footer.php'; ?>

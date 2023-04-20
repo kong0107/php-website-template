@@ -11,9 +11,8 @@ require 'html-header.php';
 // 可參考： https://ecssl.pchome.com.tw/sys/cflowex/index/staticPage/CLAUSE
 ?>
 
-<div id="terms"></div>
-<script>
-    loadMarkdownToElement('data/terms.md', '#terms');
-</script>
+<div class="markdown">
+    <?php readfile('data/terms.md'); ?>
+</div>
 
 <?php require 'html-footer.php'; ?>

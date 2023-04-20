@@ -12,37 +12,27 @@ listen(document, 'DOMContentLoaded', () => {
             item.setAttribute('itemtype', type);
         }
     });
+
+    /**
+     * 把 .markdown 裡的 Markdown 替代成 HTML 。
+     * 只在需要的時候才動態載入外部資源。
+     */
+    if($('.markdown')) document.head.append(createElementFromJsonML(
+        ['script', {
+            src: 'https://cdn.jsdelivr.net/npm/marked@v4.3.0/marked.min.js',
+            onload: () => {
+                const parser = new DOMParser();
+                $$('.markdown').forEach(elem => {
+                    try {
+                        const html = marked.parse(elem.innerHTML.trim());
+                        const doc = parser.parseFromString(html, 'text/html');
+                        console.log(html);
+                        elem.replaceChildren(...doc.body.childNodes);
+                        elem.classList.remove('markdown');
+                    }
+                    catch(e) {console.error(e);}
+                });
+            }
+        }]
+    ));
 });
-
-
-/**
- * @func loadMarkdownToElement
- * @desc 下載 markdown ，轉成 HTML 後塞進元素裡。
- * @param {string | URL | Request} source
- * @param {Element | string} target
- * @returns {undefined}
- */
-const loadMarkdownToElement = (() => {
-    let promise; // 只在需要的時候才動態載入外部資源。
-    let parser;
-    return function(source, target) {
-        if(!promise) {
-            promise = new Promise((onload, onerror) => {
-                document.head.append(createElementFromJsonML(
-                    ['script', {
-                        src: 'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
-                        onload, onerror
-                    }]
-                ));
-            });
-            parser = new DOMParser();
-        }
-        if(!(target instanceof Element)) target = $(target);
-        Promise.all([fetchText(source), promise])
-        .then(([md]) => {
-            const html = marked.parse(md);
-            const doc = parser.parseFromString(html, 'text/html');
-            target.replaceChildren(...doc.body.childNodes)
-        });
-    }
-})();

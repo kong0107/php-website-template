@@ -11,9 +11,8 @@ require 'html-header.php';
 // 可參考： https://www.ey.gov.tw/Page/806F6058055F6695
 ?>
 
-<div id="privacy"></div>
-<script>
-    loadMarkdownToElement('data/privacy.md', '#privacy');
-</script>
+<div class="markdown">
+    <?php readfile('data/privacy.md'); ?>
+</div>
 
 <?php require 'html-footer.php'; ?>
