@@ -82,8 +82,8 @@
     <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.2/dist/all.js"></script>
-    <script src="assets/main.js?time=<?=time()?>"></script>
-    <link rel="stylesheet" href="assets/main.css?time=<?=time()?>">
+    <script src="assets/main.js?mtime=<?= stat('assets/main.js')['mtime'] ?>"></script>
+    <link rel="stylesheet" href="assets/main.css?mtime=<?= stat('assets/main.css')['mtime'] ?>">
 </head>
 <body>
     <div class="container">
