@@ -1,10 +1,10 @@
 <?php
-require_once './include/start.php';
+require_once './lib/start.php';
 $Get->convert();
 
 $page_info = [
     'title' => '服務條款',
-    'description' => SITE_NAME . '的服務條款',
+    'description' => CONFIG['site.name'] . '的服務條款',
 ];
 
 require 'html-header.php';
@@ -12,7 +12,7 @@ require 'html-header.php';
 ?>
 
 <div class="markdown">
-    <?php readfile('data/terms.md'); ?>
+    <?php readfile('file/markdown/terms.md'); ?>
 </div>
 
 <?php require 'html-footer.php'; ?>

@@ -1,16 +1,5 @@
 <?php
-require_once 'config.php';
-require_once 'functions.php';
-
-set_error_handler('error_handler');
-set_exception_handler('site_log');
-
-date_default_timezone_set('Asia/Taipei');
-mb_internal_encoding('UTF-8');
-mb_regex_encoding('UTF-8');
-mb_http_output('UTF-8');
-header('Content-Type: text/html; charset=UTF-8');
-
+require_once 'init.php';
 
 // 檢查與啟動 Session 。
 switch(session_status()) {
@@ -43,9 +32,15 @@ switch(session_status()) {
  * --- https://www.php.net/manual/en/features.persistent-connections.php
  */
 require_once 'database.php';
-if(DB_HOST && DB_USER) {
+if(CONFIG['mysqli.hostname'] && CONFIG['mysqli.username']) {
     try {
-        $db = new mysqlii(DB_HOST, DB_NAME, DB_PASS, DB_NAME);
+        $db = new mysqlii(
+            CONFIG['mysqli.hostname'],
+            CONFIG['mysqli.username'],
+            CONFIG['mysqli.password'],
+            CONFIG['mysqli.database'],
+            CONFIG['mysqli.port']
+        );
         $db->set_charset('utf8mb4');
         $db->query(sprintf("SET time_zone = '%s';", date('P')));
     } catch (mysqli_sql_exception $e) {
@@ -77,8 +72,8 @@ if(($user = $Session->user)
         try {
             $contents = http_post('https://oauth2.googleapis.com/token', [
                 'grant_type' => 'refresh_token',
-                'client_id' => GOOGLE_ID,
-                'client_secret' => GOOGLE_SECRET,
+                'client_id' => CONFIG['google.id'],
+                'client_secret' => CONFIG['google.secret'],
                 'refresh_token' => $user->refresh_token
             ], $meta);
         }

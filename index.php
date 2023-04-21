@@ -1,17 +1,17 @@
 <?php
-require_once './include/start.php';
+require_once './lib/start.php';
 
 $Get->convert();
 
 $page_info = [
     'title' => '', // Google 建議不要叫「首頁」
-    'description' => SITE_NAME,
+    'description' => CONFIG['site.name'],
 ];
 
 require 'html-header.php';
 ?>
 
-<h1><?= SITE_NAME ?></h1>
+<h1><?= CONFIG['site.name'] ?></h1>
 
 <?php if($Session->user): ?>
     您好， <?= $Session->user->givenName ?> 。

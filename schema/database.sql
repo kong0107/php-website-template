@@ -88,10 +88,10 @@ CREATE TABLE `log_login` (
     `person` VARCHAR(255),
     `action` ENUM(
         'login', -- login.php
-        'refresh', -- include/start.php
+        'refresh', -- lib/start.php
         'logout-by-user', -- login.php
-        'logout-by-expiration', -- include/start.php
-        'logout-by-refresh-failure' -- include/start.php
+        'logout-by-expiration', -- lib/start.php
+        'logout-by-refresh-failure' -- lib/start.php
     ) NOT NULL,
     `created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `remote_addr` VARCHAR(39),

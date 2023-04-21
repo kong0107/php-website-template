@@ -3,7 +3,7 @@
             <address itemprop="copyrightHolder" itemtype="OnlineBusiness">
                 &copy;
                 <span itemprop="copyrightYear"><?= date('Y') ?></span>
-                <span itemprop="legalName" class="text-nowrap"><?= SITE_NAME ?></span>
+                <span itemprop="legalName" class="text-nowrap"><?= CONFIG['site.name'] ?></span>
             </address>
             <div>
                 <menu class="nav mt-0">
@@ -17,7 +17,7 @@
                     class="fs-7 text-end text-muted"
                 >
                     powered by
-                    <span itemprop="name"><?= POWERED_BY ?></span>
+                    <span itemprop="name"><?= CONFIG['powered_by'] ?></span>
                 </address>
             </div>
         </fotter>

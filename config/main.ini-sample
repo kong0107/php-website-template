@@ -1,0 +1,37 @@
+; 將敏感（涉及安全問題）及常用（頁首頁尾都會需要）的資料寫在這裡。
+
+[Global]
+timezone = "Asia/Taipei"
+
+; keep empty to use `./logs/`
+; but recommended to put them outside `DocumentRoot`
+; if non-empty, must have trailing slash
+log_dir =
+
+
+[Site] ; only used in front-side
+language = "zh-Hant-TW"
+locale = "zh_TW"
+
+; used in <title> and <meta>
+site.name = "這是網站名稱"
+
+; must have trailing slash
+; used for oauth2 callback
+site.root = "https://locaolhost/php-website-template/"
+
+; powered by
+powered_by = "睿智數位工作室"
+
+
+[MySQLi] ; also used for MariaDB
+mysqli.hostname = "localhost"
+mysqli.username = "test"
+mysqli.password =
+mysqli.database = "test"
+mysqli.port = 3306
+
+
+[Google]
+google.id = ""
+google.secret = ""

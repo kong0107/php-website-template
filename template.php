@@ -1,10 +1,10 @@
 <?php
-require_once './include/start.php';
+require_once './lib/start.php';
 /**
- * 於 `/include/start.php` 宣告的變數：
- * * $db: 資料庫操作，見 `./include/database.php` 。
+ * 於 `/lib/start.php` 宣告的變數：
+ * * $db: 資料庫操作，見 `./lib/database.php` 。
  * * $Session, $Get, $Post: $_SESSION, $_GET, $_POST 的物件化版本，
- *   用法參見 `./include/associative.php` 。建議就不要再直接操作 $_SESSION 、 $_GET 和 $_POST 。
+ *   用法參見 `./lib/associative.php` 。建議就不要再直接操作 $_SESSION 、 $_GET 和 $_POST 。
  */
 
 /**

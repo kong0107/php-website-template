@@ -1,9 +1,9 @@
 <?php
-require_once './include/start.php';
+require_once './lib/start.php';
 $Get->convert();
 
 $page_info = [
-    'title' => '關於' . SITE_NAME,
+    'title' => '關於' . CONFIG['site.name'],
     'description' => '',
 ];
 
@@ -12,7 +12,7 @@ require 'html-header.php';
 ?>
 
 <div class="markdown">
-    <?php readfile('data/about.md'); ?>
+    <?php readfile('file/markdown/about.md'); ?>
 </div>
 
 <?php require 'html-footer.php'; ?>

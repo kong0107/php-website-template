@@ -11,15 +11,16 @@ function site_log(
     /*mixed*/ $target,
     /*mixed*/ ...$values
 ) : string {
-    require_once 'config.php';
-
     $text = is_string($target)
         ? (count($values) ? sprintf($target, ...$values) : $target)
         : var_export($target, true)
     ;
-    $fp = fopen(LOG_DIR . date('ym') . '.log', 'a');
-    fprintf($fp, "%s %s\n%s\n\n", date(DATE_ATOM), $_SERVER['REQUEST_URI'], $text);
-    fclose($fp);
+    $log_dir = CONFIG['log_dir'] ? CONFIG['log_dir'] : (__DIR__ . '/../logs/');
+    file_put_contents(
+        $log_dir . date('ym') . '.log',
+        sprintf("%s %s\n%s\n\n", date(DATE_ATOM), $_SERVER['REQUEST_URI'], $text),
+        FILE_APPEND | LOCK_EX
+    );
     return $text;
 }
 
@@ -27,14 +28,14 @@ function site_log(
  * Strings representing error numbers; used in `error_handler`
  * https://www.php.net/manual/en/errorfunc.constants.php
  */
-define('ERROR_CONSTANT_NAMES', [
+define('ERROR_CONSTANT_NAMES', array(
     'ERROR', 'WARNING', 'PARSE', 'NOTICE',
     'CORE_ERROR', 'CORE_WARNING',
     'COMPILE_ERROR', 'COMPILE_WARNING',
     'USER_ERROR', 'USER_WARNING', 'USER_NOTICE',
     'STRICT', 'RECOVERABLE_ERROR',
     'DEPRECATED', 'USER_DEPRECATED'
-]);
+));
 
 /**
  * Function to be registered by `set_error_handler`.
@@ -58,11 +59,17 @@ function error_handler(
  */
 function simple_html(
     string $body,
-    string $head,
+    string $head = '',
     int $response_code = 0
 ) : void {
-    if($response_code) http_response_code($response_code);
-    echo '<!DOCTYPE html><html lang="zh-Hant-TW"><head><meta charset="UTF-8">', $head, '</head><body>', $body, '</body></html>';
+    if($response_code && !headers_sent()) {
+        http_response_code($response_code);
+        header('Content-Type: text/html; charset=UTF-8');
+    }
+    printf(
+        '<!DOCTYPE html><html lang="%s"><head><meta charset="UTF-8">%s</head><body>%s</body></html>',
+        CONFIG['language'], $head, $body
+    );
     exit;
 }
 

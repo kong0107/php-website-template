@@ -5,15 +5,13 @@
  * 2. 登出。
  * 3. 登入後的驗證：從 Google 被轉回來。
  *
- * 確認登入狀態、確認未逾時的程式碼另見 `/include/start.php` 。
+ * 確認登入狀態、確認未逾時的程式碼另見 `/lib/start.php` 。
  *
  * https://growingdna.com/google-oauth-2-0-for-3rd-party-login/
  * https://developers.google.com/identity/protocols/oauth2/web-server
  * https://developers.google.com/identity/openid-connect/openid-connect
  */
-require_once './include/config.php';
-require_once './include/functions.php';
-require_once './include/database.php';
+require_once './lib/init.php';
 
 /**
  * 如果是直接連來這一頁，那就轉去 Google 的登入頁。
@@ -35,8 +33,8 @@ if(empty($_GET['logout']) && empty($_GET['code'])) {
 
     $query = http_build_query([
         'access_type' => 'offline',
-        'client_id' => GOOGLE_ID,
-        'redirect_uri' => OAUTH2_CALLBACK,
+        'client_id' => CONFIG['google.id'],
+        'redirect_uri' => CONFIG['site.root'] . 'login.php',
         'response_type' => 'code',
         'scope' => 'openid profile email',
         'state' => $_SESSION['csrf_token']
@@ -48,7 +46,7 @@ if(empty($_GET['logout']) && empty($_GET['code'])) {
 /**
  * 這邊才載入其他初始設定，不然會跟上面的 session_start() 衝突。
  */
-require_once './include/start.php';
+require_once './lib/start.php';
 
 /**
  * 處理登出。
@@ -79,10 +77,10 @@ if($csrf_token !== $Get->state) {
 try {
     $contents = http_post('https://oauth2.googleapis.com/token', [
         'grant_type' => 'authorization_code',
-        'client_id' => GOOGLE_ID,
-        'client_secret' => GOOGLE_SECRET,
+        'client_id' => CONFIG['google.id'],
+        'client_secret' => CONFIG['google.secret'],
         'code' => $Get->code,
-        'redirect_uri' => OAUTH2_CALLBACK
+        'redirect_uri' => CONFIG['site.root'] . 'login.php'
     ], $meta);
 }
 catch(Throwable $e) {

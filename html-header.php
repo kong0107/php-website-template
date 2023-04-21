@@ -1,6 +1,7 @@
 <?php
     // 若已被引用過，並不會重複引用。
-    require_once './include/start.php';
+    require_once './lib/start.php';
+    header('Content-Type: text/html; charset=UTF-8');
 
     // 本頁資訊，有可能先被設定過了。
     if(empty($page_info)) $page_info = [];
@@ -33,7 +34,7 @@
     if(empty($page_info['og:image'])) {
         $page_info['og:image'] = 'https://fakeimg.pl/1200x630/282828/eae0d0/?font=noto&text=';
         if(isset($page_info['title'])) $page_info['og:image'] .= $page_info['title'] . '%0a';
-        $page_info['og:image'] .= SITE_NAME;
+        $page_info['og:image'] .= CONFIG['site.name'];
     }
     if(!parse_url($page_info['og:image'], PHP_URL_SCHEME)) {
         $page_info['og:image'] = $page_info['origin']
@@ -48,22 +49,22 @@
     }
 ?>
 <!DOCTYPE html>
-<html lang="zh-Hant-TW" itemtype="WebPage">
+<html lang="<?= CONFIG['language'] ?>" itemtype="WebPage">
 <head>
     <meta charset="UTF-8">
-    <meta property="og:locale" content="zh_TW">
-    <meta itemprop="inLanguage" content="zh-Hant-TW">
+    <meta property="og:locale" content="<?= CONFIG['locale'] ?>">
+    <meta itemprop="inLanguage" content="<?= CONFIG['language'] ?>">
 
     <?php if(empty($page_info['title'])): ?>
-        <title><?= SITE_NAME ?></title>
-        <meta itemprop="headline" property="og:title" content="<?= SITE_NAME ?>">
+        <title><?= CONFIG['site.name'] ?></title>
+        <meta itemprop="headline" property="og:title" content="<?= CONFIG['site.name'] ?>">
         <meta property="og:type" content="website">
     <?php else: ?>
-        <title><?= $page_info['title'] ?> - <?= SITE_NAME ?></title>
+        <title><?= $page_info['title'] ?> - <?= CONFIG['site.name'] ?></title>
         <meta itemprop="headline" property="og:title" content="<?= $page_info['title'] ?>">
         <meta property="og:type" content="article">
     <?php endif; ?>
-    <meta property="og:site_name" content="<?= SITE_NAME ?>">
+    <meta property="og:CONFIG['site.name']" content="<?= CONFIG['site.name'] ?>">
 
     <?php if(!empty($page_info['description'])): ?>
         <meta itemprop="description" property="og:description" name="description"
@@ -71,24 +72,24 @@
         >
     <?php endif; ?>
 
-    <meta name="author" content="<?= SITE_NAME ?>">
-    <meta name="creator" content="<?= POWERED_BY ?>">
+    <meta name="author" content="<?= CONFIG['site.name'] ?>">
+    <meta name="creator" content="<?= CONFIG['powered_by'] ?>">
     <meta property="og:url" content="<?= $page_info['og:url'] ?>">
     <meta itemprop="primaryImageOfPage" property="og:image" content="<?= $page_info['og:image'] ?>">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="https://fakeimg.pl/256x256/?text=favicon">
-    <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?text=favicon">
+    <link rel="icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>">
+    <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.2/dist/all.js"></script>
-    <script src="./js/main.js?time=<?=time()?>"></script>
-    <link rel="stylesheet" href="./css/main.css?time=<?=time()?>">
+    <script src="assets/main.js?time=<?=time()?>"></script>
+    <link rel="stylesheet" href="assets/main.css?time=<?=time()?>">
 </head>
 <body>
     <div class="container">
         <header>
             <nav class="navbar">
-                <a class="navbar-brand" href="./"><?= SITE_NAME ?></a>
+                <a class="navbar-brand" href="./"><?= CONFIG['site.name'] ?></a>
                 <div class="d-flex">
                     <menu class="nav mt-0">
                         <li class="nav-item"><a class="nav-link" href="about.php">關於</a></li>
@@ -99,10 +100,10 @@
                                     title="<?= $Session->user->givenName ?> <?= $Session->user->familyName ?> &lt;<?= $Session->user->email ?>&gt;"
                                 >登出</a>
                             </li>
-                        <?php elseif(OAUTH2_CALLBACK): ?>
+                        <?php elseif(CONFIG['google.id']): ?>
                             <li class="nav-item border rounded">
                                 <a class="nav-link google-login" href="login.php">
-                                    <img alt="Google" src="img/google.svg" class="align-text-top">
+                                    <img alt="Google" src="assets/google.svg" class="align-text-top">
                                     <span class="d-none d-md-inline">使用 Google</span>
                                     登入
                                 </a>

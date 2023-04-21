@@ -1,9 +1,8 @@
 vendor/
 
-include/config.php
+config/*.ini
 
-logs/*
-!logs/.htaccess
+logs/*.log
 
 file/*
-!file/.gitkeep
+!file/markdown

@@ -1,5 +1,5 @@
 <?php
-require_once '../include/start.php';
+require_once '../lib/start.php';
 
 if(!$Session->user) redirect('../login.php');
 
