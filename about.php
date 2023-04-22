@@ -12,7 +12,7 @@ require 'html-header.php';
 ?>
 
 <div class="markdown">
-    <?php readfile('file/markdown/about.md'); ?>
+    <?php readfile('var/markdown/about.md'); ?>
 </div>
 
 <?php require 'html-footer.php'; ?>

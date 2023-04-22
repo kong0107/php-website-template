@@ -12,7 +12,7 @@ require 'html-header.php';
 ?>
 
 <div class="markdown">
-    <?php readfile('file/markdown/privacy.md'); ?>
+    <?php readfile('var/markdown/privacy.md'); ?>
 </div>
 
 <?php require 'html-footer.php'; ?>

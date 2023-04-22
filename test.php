@@ -14,8 +14,8 @@
     }
 
     $use_composer = is_file('composer.json');
-    $config = parse_ini_file('config/main.ini');
-    if($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'logs/';
+    $config = parse_ini_file('var/config.ini');
+    if($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'var/logs/';
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
@@ -39,9 +39,9 @@
                 >cancel</span>
                 <p>
                     找不到設定檔。請將
-                    <code>config/main.ini-sample</code>
+                    <code>var/config.ini-sample</code>
                     複製為
-                    <code>config/main.ini</code>
+                    <code>var/config.ini</code>
                     並修改後者內容。
                 </p>
             <?php endif; ?>
@@ -89,33 +89,18 @@
             <?php endif; ?>
         </li>
         <li aria-label="記錄檔" class="d-flex">
-            <?php if($config): ?>
-                <?php
+            <?php
+                if($config):
                     if(@ opendir($log_dir)):
                         closedir();
                         if(strpos(realpath($log_dir), realpath(getenv('DOCUMENT_ROOT'))) === 0):
-                            if(is_file($log_dir . '.htaccess')):
-                                ?>
+                            ?>
+                                <div id="log_dir_message_info" class="d-flex">
                                     <span class="material-symbols-outlined text-info"
                                     >info</span>
                                     <p>記錄檔目錄可以運作，但仍建議將該目錄設定在 <code>DocumentRoot</code> 之外。</p>
-                                <?php
-                            else:
-                                ?>
-                                    <span class="material-symbols-outlined text-warning"
-                                    >warning</span>
-                                    <p>
-                                        若將記錄檔目錄設定在
-                                        <code>DocumentRoot</code>
-                                        之內，請務必在記錄檔目錄內放置適當的
-                                        <code>.htaccess</code>
-                                        檔案，以避免純文字的記錄檔被訪客讀取。
-                                        例如<a href="<?= $log_dir ?>.htacces">這個連結</a>
-                                        應該回傳 <code>403 Forbidden</code> ，
-                                        而不是 <code>404 Not Found</code> 或 <code>200 OK</code>。
-                                    </p>
-                                <?php
-                            endif;
+                                </div>
+                            <?php
                         else:
                             ?>
                                 <span class="material-symbols-outlined text-success"
@@ -129,18 +114,20 @@
                             >cancel</span>
                             <p>
                                 未能開啟記錄檔目錄，請確認
-                                <code><?= realpath(LOG_DIR) ?></code>
+                                <code><?= $log_dir ?></code>
                                 目錄存在，
                                 並且 HTTP 伺服軟體有寫入權限。
                             </p>
                         <?php
                     endif;
-                ?>
-            <?php else: ?>
-                <span class="material-symbols-outlined text-danger"
-                >cancel</span>
-                <p>未能知曉記錄檔路徑，需要先載入設定檔。</p>
-            <?php endif; ?>
+                else:
+                    ?>
+                        <span class="material-symbols-outlined text-danger"
+                        >cancel</span>
+                        <p>未能知曉記錄檔路徑，需要先載入設定檔。</p>
+                    <?php
+                endif;
+            ?>
         </li>
         <li aria-label="資料庫" class="d-flex">
             <?php if(class_exists('mysqli')): ?>

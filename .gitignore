@@ -1,8 +1,5 @@
 vendor/
 
-config/*.ini
-
-logs/*.log
-
-file/*
-!file/markdown
+var/*
+!var/.htaccess
+!var/config.ini-sample

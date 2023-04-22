@@ -1,5 +1,5 @@
 <?php
-define('CONFIG', parse_ini_file('config/main.ini'));
+define('CONFIG', parse_ini_file('var/config.ini'));
 
 require_once 'functions.php';
 set_error_handler('error_handler');
