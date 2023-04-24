@@ -3,7 +3,7 @@ require_once './lib/start.php';
 $Get->convert();
 
 $page_info = [
-    'title' => '關於' . CONFIG['site.name'],
+    'title' => '關於本站',
     'description' => '',
 ];
 

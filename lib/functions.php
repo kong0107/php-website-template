@@ -15,7 +15,7 @@ function site_log(
         ? (count($values) ? sprintf($target, ...$values) : $target)
         : var_export($target, true)
     ;
-    $log_dir = CONFIG['log_dir'] ? CONFIG['log_dir'] : (__DIR__ . '/../logs/');
+    $log_dir = CONFIG['log_dir'] ? CONFIG['log_dir'] : (__DIR__ . '/../var/logs/');
     file_put_contents(
         $log_dir . date('ym') . '.log',
         sprintf("%s %s\n%s\n\n", date(DATE_ATOM), $_SERVER['REQUEST_URI'], $text),

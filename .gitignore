@@ -1,5 +1,4 @@
 vendor/
-
 var/*
 !var/.htaccess
 !var/config.ini-sample

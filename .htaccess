@@ -1,2 +1,20 @@
 Require all granted
 DirectoryIndex index.php index.html
+
+<IfModule rewrite_module>
+    # 必要設定
+    Options FollowSymLinks
+    RewriteEngine On
+
+    # 允許爬蟲
+    RewriteRule ^robots\.txt$ - [L]
+
+    # 錯誤頁面
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ error.php?status=404 [L]
+
+    # 防盜連
+    RewriteCond expr "! %{HTTP_REFERER} -strmatch '*://%{HTTP_HOST}/*'"
+    RewriteRule !(^|/|\.php)$ error.php?status=403 [L]
+</IfModule>

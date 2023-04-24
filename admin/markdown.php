@@ -13,7 +13,7 @@ $files = [
 if($content = trim($Post->content)) {
     if(!array_key_exists($Get->name, $files))
         exit('no such file');
-    if(!file_put_contents("../file/markdown/{$Get->name}.md", $content . "\r\n"))
+    if(!file_put_contents("../var/markdown/{$Get->name}.md", $content . "\r\n"))
         exit('write failure');
     $message = date('m/d H:i:s ') . '儲存';
 }
@@ -37,7 +37,7 @@ require 'html-header.php';
                 （使用<a href="https://markdown.tw/#header" target="_blank">Markdown 語法</a>）
             </header>
             <textarea name="content" class="form-control"
-            ><?= file_get_contents("../file/markdown/{$Get->name}.md") ?></textarea>
+            ><?= file_get_contents("../var/markdown/{$Get->name}.md") ?></textarea>
         </div>
         <div class="col-md-6">
             <header>顯示結果</header>
@@ -63,7 +63,7 @@ require 'html-header.php';
         <?php foreach($files as $name => $title): ?>
             <section class="mb-4 col-lg-4 px-3 border-start border-success">
                 <div class="markdown mb-3" style="height: 50vh; overflow-y: auto;"
-                ><?= file_get_contents("../file/markdown/$name.md") ?></div>
+                ><?= file_get_contents("../var/markdown/$name.md") ?></div>
                 <a class="btn btn-info" href="admin/markdown.php?name=<?= $name ?>">編輯</a>
             </section>
         <?php endforeach; ?>

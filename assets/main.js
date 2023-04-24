@@ -26,7 +26,6 @@ listen(document, 'DOMContentLoaded', () => {
                     try {
                         const html = marked.parse(elem.innerHTML.trim());
                         const doc = parser.parseFromString(html, 'text/html');
-                        console.log(html);
                         elem.replaceChildren(...doc.body.childNodes);
                         elem.classList.remove('markdown');
                     }

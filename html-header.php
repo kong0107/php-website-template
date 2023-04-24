@@ -78,6 +78,7 @@
     <meta itemprop="primaryImageOfPage" property="og:image" content="<?= $page_info['og:image'] ?>">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="<?= CONFIG['site.root'] ?>">
     <link rel="icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>">
     <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>

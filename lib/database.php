@@ -15,7 +15,17 @@ class mysqlii extends mysqli {
     ) /*: mysqli_result|bool*/ {
         if(count($values)) $sql = sprintf($sql, ...$values);
         // site_log('SQL %d: %s', ++$this->counter, $sql);
-        return parent::query($sql);
+        try {
+            return parent::query($sql);
+        }
+        catch (mysqli_sql_exception $e) {
+            $errno = $e->getCode();
+            site_log(
+                "Database Error %d: %s\n%s",
+                $e->getCode(), $e->getMessage(), $sql
+            );
+        }
+        return false;
     }
 
     /**
