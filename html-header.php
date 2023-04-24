@@ -85,6 +85,8 @@
     <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.2/dist/all.js"></script>
     <script src="assets/main.js?mtime=<?= stat('assets/main.js')['mtime'] ?>"></script>
     <link rel="stylesheet" href="assets/main.css?mtime=<?= stat('assets/main.css')['mtime'] ?>">
+
+    <?= $page_info['html_head'] ?? '' ?>
 </head>
 <body>
     <div class="container">
@@ -102,9 +104,18 @@
                                 >登出</a>
                             </li>
                         <?php elseif(CONFIG['google.id']): ?>
+                            <?php
+                                /**
+                                 * 使用 Google 商標是有限制的
+                                 * https://developers.google.com/identity/branding-guidelines
+                                 */
+                            ?>
+                            <link rel="preconnect" href="https://fonts.googleapis.com">
+                            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap">
                             <li class="nav-item border rounded">
                                 <a class="nav-link google-login" href="login.php">
-                                    <img alt="Google" src="assets/google.svg" class="align-text-top">
+                                    <img alt aria-hidden="true" src="assets/google.svg" class="align-text-top">
                                     <span class="d-none d-md-inline">使用 Google</span>
                                     登入
                                 </a>

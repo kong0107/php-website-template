@@ -26,9 +26,9 @@ powered_by = "睿智數位工作室"
 
 [MySQLi] ; also used for MariaDB
 mysqli.hostname = "localhost"
-mysqli.username = "test"
-mysqli.password =
-mysqli.database = "test"
+mysqli.username = ""
+mysqli.password = ""
+mysqli.database = ""
 mysqli.port = 3306
 
 

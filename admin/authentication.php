@@ -8,7 +8,5 @@ $sql = 'SELECT COUNT(*) FROM Person WHERE ' . mysqlii::join_assoc([
     'role' => 'admin'
 ]);
 
-if(!$db->get_one($sql)) {
-    http_response_code(403);
-    simple_html('您沒有管理權限，請聯絡網站管理者以取得權限。');
-}
+if(!$db->get_one($sql))
+    error_output(403, '您沒有管理權限，請聯絡網站管理者以取得權限。');

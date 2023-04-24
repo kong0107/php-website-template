@@ -17,4 +17,13 @@ DirectoryIndex index.php index.html
     # 防盜連
     RewriteCond expr "! %{HTTP_REFERER} -strmatch '*://%{HTTP_HOST}/*'"
     RewriteRule !(^|/|\.php)$ error.php?status=403 [L]
+
+    # 其他方式的缺點：
+    # - ErrorDocument:
+    #   - 路徑是相對於 `DocumentRoot` ，但本專案未必置於根目錄。
+    #   - 無論請求何種檔案類型，均傳回同樣相同檔案。若是預期 JSON 卻收到 HTML 的話，不太好。
+    #   - 每種錯誤碼都要寫一行。
+    # - RewriteRule \.jpg$ error.svg [L]
+    #   - 不會是 403 ，而會是 200 ；此情形也不能用 [R=403] （會變成引用 ErrorDocument ）
+    #   - 每種檔案類型都要寫一行。
 </IfModule>

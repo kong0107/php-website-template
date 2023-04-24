@@ -55,41 +55,6 @@ function error_handler(
 /******** HTTP & HTML ********/
 
 /**
- * 輸出一段文字然後就結束頁面，可以附加 HTTP 狀態碼。
- */
-function simple_html(
-    string $body,
-    string $head = '',
-    int $response_code = 0
-) : void {
-    if($response_code && !headers_sent()) {
-        http_response_code($response_code);
-        header('Content-Type: text/html; charset=UTF-8');
-    }
-    printf(
-        '<!DOCTYPE html><html lang="%s"><head><meta charset="UTF-8">%s</head><body>%s</body></html>',
-        CONFIG['language'], $head, $body
-    );
-    exit;
-}
-
-/**
- * Redirect to the specified URL instantly or after some seconds.
- */
-function redirect(
-    string $url,
-    int $seconds = 0
-) : void {
-    if($seconds < 0) $seconds = 0;
-    if(!$seconds && !headers_sent()) header('Location: ' . $url);
-    simple_html(
-        "若未於 $seconds 秒後跳轉，請自行點按前往 <a href=\"$url\">$url</a> 。",
-        "<meta http-equiv=\"refresh\" content=\"$seconds; url=$url\">"
-        . "<script>setTimeout(() => location.href = '$url', {$seconds}000);</script>"
-    );
-}
-
-/**
  * 發出一個 HTTP Post ，並回傳檔頭與內容。
  */
 function http_post(
@@ -123,6 +88,52 @@ function http_post(
     $contents = stream_get_contents($stream);
     fclose($stream);
     return $contents;
+}
+
+
+function use_html_template($page_info = []) {
+    global $Get, $Session;
+    require __DIR__ . '/../html-header.php';
+    echo $page_info['html_body'] ?? '';
+    require __DIR__ . '/../html-footer.php';
+    exit;
+}
+
+function redirect(
+    string $url,
+    int $seconds = 0
+) : void {
+    if ($seconds < 0) $seconds = 0;
+    if (!$seconds && !headers_sent()) header('Location: ' . $url);
+    use_html_template(array(
+        'title' => '轉址',
+        'html_head' => "
+            <meta http-equiv=\"refresh\" content=\"$seconds; url=$url\">
+            <script>setTimeout(() => location.href = '$url', {$seconds}000);</script>
+        ",
+        'html_body' => "預計於 $seconds 秒後跳轉，或請自行點按前往 <a href=\"$url\">$url</a> 。"
+    ));
+}
+
+/**
+ * 傳送狀態碼給前端，依 MIME type 輸出適合的錯誤訊息。
+ * 實際運作於 `error.php` ，與 `.htaccess` 導過去的錯誤共用程式碼。
+ */
+function error_output(
+    int $status_code = 500,
+    string $contents = '',
+    string $mime_type = 'text/html',
+    array $page_info = []
+) : void {
+    if($mime_type === 'text/html')
+        if(empty($page_info['html_body'])) $page_info['html_body'] = $contents;
+
+    $http_response = array(
+        'status' => $status_code,
+        'type' => $mime_type
+    );
+    require __DIR__ . '/../error.php';
+    exit;
 }
 
 

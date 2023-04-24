@@ -85,7 +85,7 @@ try {
 }
 catch(Throwable $e) {
     site_log('未能收到存取權杖。');
-    simple_html('登入失敗。');
+    error_output(401, '登入失敗。');
 }
 
 // site_log($meta);

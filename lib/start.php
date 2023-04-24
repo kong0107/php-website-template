@@ -2,7 +2,7 @@
 require_once 'init.php';
 
 // 檢查與啟動 Session 。
-switch(session_status()) {
+switch (session_status()) {
     case PHP_SESSION_DISABLED: {
         site_log('session disabled');
         http_response_code(500);
@@ -15,7 +15,7 @@ switch(session_status()) {
         break;
     }
     case PHP_SESSION_ACTIVE: {
-        site_log('session has already been started; cannot set `session.cookie_lifetime` in ' . __FILE__);
+        site_log('warning: session has already been started; cannot set `session.cookie_lifetime` in ' . __FILE__);
     }
 }
 
@@ -31,8 +31,8 @@ switch(session_status()) {
  * > for every child that opened a persistent connection will have its own open persistent connection to the server.
  * --- https://www.php.net/manual/en/features.persistent-connections.php
  */
-require_once 'database.php';
-if(CONFIG['mysqli.hostname'] && CONFIG['mysqli.username']) {
+if (CONFIG['mysqli.hostname'] && CONFIG['mysqli.username']) {
+    require_once 'database.php';
     try {
         $db = new mysqlii(
             CONFIG['mysqli.hostname'],
@@ -55,7 +55,7 @@ if(CONFIG['mysqli.hostname'] && CONFIG['mysqli.username']) {
  * 將常用的預設全域變數轉為自定的物件，方便操作。
  * 注意建構式中的第二個引數，這表示修改 $Get->x 並不會改變 $_GET['x'] ，但是修改 $Session->y 會改變 $_SESSION['y'] 。
  */
-require_once 'associative.php';
+require_once __DIR__ . '/associative.php';
 $Get = new Associative($_GET);
 $Post = new Associative($_POST);
 $Session = new Associative($_SESSION, true);
@@ -65,10 +65,10 @@ $Session = new Associative($_SESSION, true);
  * 確認是否仍在登入狀態。
  * 登入的處理另見 `/login.php` 。
  */
-if(($user = $Session->user)
+if (($user = $Session->user)
     && ($user->access_expire < $_SERVER['REQUEST_TIME'])
 ) {
-    if($user->refresh_token) {
+    if ($user->refresh_token) {
         try {
             $contents = http_post('https://oauth2.googleapis.com/token', [
                 'grant_type' => 'refresh_token',
@@ -88,7 +88,7 @@ if(($user = $Session->user)
             unset($Session->user);
         }
 
-        if(!$contents) site_log('非預期：HTTP 成功，但是重新整理存取權杖失敗？');
+        if (!$contents) site_log('非預期：HTTP 成功，但是重新整理存取權杖失敗？');
         site_log('重新整理 %s 的存取權杖成功。', $user->email);
         // site_log($meta);
 
