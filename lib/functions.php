@@ -52,44 +52,7 @@ function error_handler(
 }
 
 
-/******** HTTP & HTML ********/
-
-/**
- * 發出一個 HTTP Post ，並回傳檔頭與內容。
- */
-function http_post(
-    string $url,
-    array $content,
-    ?array &$meta = null, //< 回傳的檔頭
-    array $header = ['Content-Type' => 'application/x-www-form-urlencoded']
-) /*: string|false*/ {
-    $package = [
-        'method' => 'POST',
-        'content' => http_build_query($content)
-    ];
-    if(count($header)) {
-        if(!array_is_list($header)) {
-            $header = array_map(
-                function($k, $v) { return "$k: $v"; },
-                array_keys($header),
-                array_values($header)
-            );
-        }
-        $package['header'] = $header;
-    }
-    $context = stream_context_create(['http' => $package]);
-
-    // return file_get_contents($url, false, $context);
-    $stream = fopen($url, 'r', false, $context);
-    if($stream === false)
-        throw new Exception('Failed to request ' . $url);
-
-    $meta = stream_get_meta_data($stream);
-    $contents = stream_get_contents($stream);
-    fclose($stream);
-    return $contents;
-}
-
+/******** 輸出東西到前端 ********/
 
 function use_html_template($page_info = []) {
     global $Get, $Session;
@@ -121,16 +84,17 @@ function redirect(
  */
 function error_output(
     int $status_code = 500,
-    string $contents = '',
+    string $body = '',
     string $mime_type = 'text/html',
     array $page_info = []
 ) : void {
     if($mime_type === 'text/html')
-        if(empty($page_info['html_body'])) $page_info['html_body'] = $contents;
+        if(empty($page_info['html_body'])) $page_info['html_body'] = $body;
 
     $http_response = array(
         'status' => $status_code,
-        'type' => $mime_type
+        'type' => $mime_type,
+        'body' => $body
     );
     require __DIR__ . '/../error.php';
     exit;

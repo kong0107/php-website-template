@@ -19,7 +19,7 @@ require_once './lib/init.php';
 if(empty($_GET['logout']) && empty($_GET['code'])) {
     switch(session_status()) {
         case PHP_SESSION_DISABLED: {
-            site_log('session disabled');
+            site_log('error: session disabled');
             http_response_code(500);
             exit;
         }
@@ -27,6 +27,9 @@ if(empty($_GET['logout']) && empty($_GET['code'])) {
             session_set_cookie_params(120); // 讓 csrf_token 是短時效
             session_start();
             break;
+        }
+        case PHP_SESSION_ACTIVE: {
+            site_log('warning: session has already been started; could not set `session.cookie_lifetime` in ' . __FILE__);
         }
     }
     $_SESSION['csrf_token'] = base64url_encode(random_bytes(24));
@@ -75,21 +78,20 @@ if($csrf_token !== $Get->state) {
 }
 
 try {
-    $contents = http_post('https://oauth2.googleapis.com/token', [
+    $response = http_post('https://oauth2.googleapis.com/token', [
         'grant_type' => 'authorization_code',
         'client_id' => CONFIG['google.id'],
         'client_secret' => CONFIG['google.secret'],
         'code' => $Get->code,
         'redirect_uri' => CONFIG['site.root'] . 'login.php'
-    ], $meta);
+    ]);
 }
 catch(Throwable $e) {
     site_log('未能收到存取權杖。');
     error_output(401, '登入失敗。');
 }
 
-// site_log($meta);
-$result = json_decode($contents);
+$result = json_decode($response['body']);
 $id_token = jwt_decode($result->id_token)->payload;
 
 $db->replace('Person', $user = [

@@ -1,10 +1,11 @@
 <?php
 require_once 'init.php';
+require_once 'http.php';
 
 // 檢查與啟動 Session 。
 switch (session_status()) {
     case PHP_SESSION_DISABLED: {
-        site_log('session disabled');
+        site_log('error: session disabled');
         http_response_code(500);
         exit;
     }
@@ -15,7 +16,7 @@ switch (session_status()) {
         break;
     }
     case PHP_SESSION_ACTIVE: {
-        site_log('warning: session has already been started; cannot set `session.cookie_lifetime` in ' . __FILE__);
+        // do nothing. this could be matched if visiting `login.php`
     }
 }
 
@@ -31,23 +32,21 @@ switch (session_status()) {
  * > for every child that opened a persistent connection will have its own open persistent connection to the server.
  * --- https://www.php.net/manual/en/features.persistent-connections.php
  */
-if (CONFIG['mysqli.hostname'] && CONFIG['mysqli.username']) {
-    require_once 'database.php';
-    try {
-        $db = new mysqlii(
-            CONFIG['mysqli.hostname'],
-            CONFIG['mysqli.username'],
-            CONFIG['mysqli.password'],
-            CONFIG['mysqli.database'],
-            CONFIG['mysqli.port']
-        );
-        $db->set_charset('utf8mb4');
-        $db->query(sprintf("SET time_zone = '%s';", date('P')));
-    } catch (mysqli_sql_exception $e) {
-        site_log('MySQL Error %d: %s', $e->getCode(), $e->getMessage());
-        http_response_code(500);
-        exit;
-    }
+require_once 'database.php';
+try {
+    $db = new mysqlii(
+        CONFIG['mysqli.hostname'],
+        CONFIG['mysqli.username'],
+        CONFIG['mysqli.password'],
+        CONFIG['mysqli.database'],
+        CONFIG['mysqli.port']
+    );
+    $db->set_charset('utf8mb4');
+    $db->query(sprintf("SET time_zone = '%s';", date('P')));
+} catch (mysqli_sql_exception $e) {
+    site_log('MySQL Error %d: %s', $e->getCode(), $e->getMessage());
+    http_response_code(500); // 這裡不能用 error_output() ，不然會遞迴。
+    exit;
 }
 
 
@@ -70,12 +69,12 @@ if (($user = $Session->user)
 ) {
     if ($user->refresh_token) {
         try {
-            $contents = http_post('https://oauth2.googleapis.com/token', [
+            $response = http_post('https://oauth2.googleapis.com/token', [
                 'grant_type' => 'refresh_token',
                 'client_id' => CONFIG['google.id'],
                 'client_secret' => CONFIG['google.secret'],
                 'refresh_token' => $user->refresh_token
-            ], $meta);
+            ]);
         }
         catch (Throwable $e) {
             site_log('重新整理 %s 的存取權杖失敗。', $user->email);
@@ -88,11 +87,14 @@ if (($user = $Session->user)
             unset($Session->user);
         }
 
-        if (!$contents) site_log('非預期：HTTP 成功，但是重新整理存取權杖失敗？');
+        if (empty($response['body'])) {
+            site_log('非預期：HTTP 成功，但是重新整理存取權杖失敗？');
+            site_log($response);
+            error_output(500, '與 Google 的連線發生錯誤');
+        }
         site_log('重新整理 %s 的存取權杖成功。', $user->email);
-        // site_log($meta);
 
-        $result = json_decode($contents);
+        $result = json_decode($response['body']);
         $db->insert('log_login', [
             'person' => $user->identifier,
             'action' => 'refresh',

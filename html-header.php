@@ -1,6 +1,6 @@
 <?php
     // 若已被引用過，並不會重複引用。
-    require_once './lib/start.php';
+    require_once __DIR__ . '/lib/start.php';
     header('Content-Type: text/html; charset=UTF-8');
 
     // 本頁資訊，有可能先被設定過了。
@@ -83,8 +83,8 @@
     <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.2/dist/all.js"></script>
-    <script src="assets/main.js?mtime=<?= stat('assets/main.js')['mtime'] ?>"></script>
-    <link rel="stylesheet" href="assets/main.css?mtime=<?= stat('assets/main.css')['mtime'] ?>">
+    <script src="assets/main.js?mtime=<?= stat(__DIR__ . '/assets/main.js')['mtime'] ?>"></script>
+    <link rel="stylesheet" href="assets/main.css?mtime=<?= stat(__DIR__ . '/assets/main.css')['mtime'] ?>">
 
     <?= $page_info['html_head'] ?? '' ?>
 </head>

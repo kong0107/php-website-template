@@ -12,6 +12,8 @@ $quality = intval($_GET['quality'] ?? -1);
 
 if(!file_exists($filename) || (strpos($filename, '..') !== false)) {
     http_response_code(403);
+    header('Content-Type: image/svg+xml');
+    readfile('assets/gpp_bad_FILL0_wght400_GRAD0_opsz48.svg');
     exit;
 }
 
