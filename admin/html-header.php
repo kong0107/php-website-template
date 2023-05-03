@@ -6,6 +6,7 @@
 <html lang="<?= CONFIG['language'] ?>">
 <head>
     <meta charset="UTF-8">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= CONFIG['site.name'] ?>管理後臺</title>
     <base href="<?= CONFIG['site.root'] ?>"><!-- 為了圖片的相對路徑。注意也因此： HTML 和 JS 用的路徑基準是這個，但在 PHP 則不是。 -->

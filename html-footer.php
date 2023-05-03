@@ -1,10 +1,14 @@
         </main>
         <footer class="d-flex justify-content-between">
-            <address itemprop="copyrightHolder" itemtype="OnlineBusiness">
-                &copy;
-                <span itemprop="copyrightYear"><?= date('Y') ?></span>
-                <span itemprop="legalName" class="text-nowrap"><?= CONFIG['site.name'] ?></span>
-            </address>
+            <div>
+                <div aria-label="著作年">
+                    &copy;
+                    <span itemprop="copyrightYear"><?= date('Y') ?></span>
+                </div>
+                <address itemprop="copyrightHolder" itemtype="OnlineBusiness">
+                    <span itemprop="legalName" class="text-nowrap"><?= CONFIG['site.name'] ?></span>
+                </address>
+            </div>
             <div>
                 <menu class="nav mt-0">
                     <?php if($Session->user && $Session->user->role === 'admin'): ?>

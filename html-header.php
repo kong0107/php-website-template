@@ -16,12 +16,13 @@
     ;
 
     /**
-     * $page_info['og:url']
-     * 本頁的絕對路徑，用於 og:url ，是臉書辨認「雖然不同連結不太一樣，但其實是同一個網頁」的關鍵。
+     * $page_info['canonical']
+     * 本頁的絕對路徑，用於 og:url 和 canonical ，分別是 Facebook 和 Google 辨認「雖然不同連結不太一樣，但其實是同一個網頁」的關鍵。
      * 預設依照 $Get 整理；參數的順序可能是重要的。
+     * https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls?hl=zh-tw
      * https://www.cnblogs.com/jianmingyuan/p/11049055.html
      */
-    $page_info['og:url'] = $page_info['origin']
+    $page_info['canonical'] = $page_info['origin']
         . $_SERVER['SCRIPT_NAME']
         . ($Get->empty() ? '' : "?$Get")
     ;
@@ -52,6 +53,8 @@
 <html lang="<?= CONFIG['language'] ?>" itemtype="WebPage">
 <head>
     <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
     <meta property="og:locale" content="<?= CONFIG['locale'] ?>">
     <meta itemprop="inLanguage" content="<?= CONFIG['language'] ?>">
 
@@ -74,15 +77,17 @@
 
     <meta name="author" content="<?= CONFIG['site.name'] ?>">
     <meta name="creator" content="<?= CONFIG['powered_by'] ?>">
-    <meta property="og:url" content="<?= $page_info['og:url'] ?>">
+
+    <link rel="canonical" href="<?= $page_info['canonical'] ?>">
+    <meta property="og:url" content="<?= $page_info['canonical'] ?>">
     <meta itemprop="primaryImageOfPage" property="og:image" content="<?= $page_info['og:image'] ?>">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <base href="<?= CONFIG['site.root'] ?>">
-    <link rel="icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>">
-    <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.2/dist/all.js"></script>
+    <link rel="icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>" referrerpolicy="origin">
+    <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>" referrerpolicy="origin">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.2/dist/all.js" referrerpolicy="origin"></script>
     <script src="assets/main.js?mtime=<?= stat(__DIR__ . '/assets/main.js')['mtime'] ?>"></script>
     <link rel="stylesheet" href="assets/main.css?mtime=<?= stat(__DIR__ . '/assets/main.css')['mtime'] ?>">
 
@@ -110,9 +115,9 @@
                                  * https://developers.google.com/identity/branding-guidelines
                                  */
                             ?>
-                            <link rel="preconnect" href="https://fonts.googleapis.com">
-                            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap">
+                            <link rel="preconnect" href="https://fonts.googleapis.com" referrerpolicy="origin">
+                            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin referrerpolicy="origin">
+                            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" referrerpolicy="origin">
                             <li class="nav-item border rounded">
                                 <a class="nav-link google-login" href="login.php">
                                     <img alt aria-hidden="true" src="assets/google.svg" class="align-text-top">

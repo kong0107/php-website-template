@@ -9,7 +9,7 @@ require_once './lib/start.php';
 
 /**
  * 範例：若存取 template.php?messages[]=xxx&HAHAHA=YOYOYO&messages[]=yyy&foo=false
- * 可見輸出的 HTML 中， og:url 後段為 template.php?foo=0&messages%5B0%5D=xxx&messages%5B1%5D=yyy
+ * 可見輸出的 HTML 中， og:url 和 canonical 後段為 template.php?foo=0&messages%5B0%5D=xxx&messages%5B1%5D=yyy
  * 參數順序會與這裡宣告的格式為準，而不是網址列中的順序。
  */
 $Get->convert(['foo' => 'bool', 'messages' => 'array']);

@@ -21,7 +21,7 @@ if($content = trim($Post->content)) {
 require 'html-header.php';
 ?>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script id="marked" src="https://cdn.jsdelivr.net/npm/marked@v4.3.0/marked.min.js"></script>
 
 <h1 class="fs-3">文檔管理</h1>
 
@@ -41,7 +41,7 @@ require 'html-header.php';
         </div>
         <div class="col-md-6">
             <header>顯示結果</header>
-            <div id="marked"></div>
+            <div id="parsed"></div>
         </div>
         <button type="submit" disabled class="btn btn-primary w-50 mx-auto mt-3">儲存</button>
     </form>
@@ -49,7 +49,7 @@ require 'html-header.php';
     <script>
         listen($('textarea'), 'input', () => {
             const content = $('textarea').value;
-            $('#marked').innerHTML = marked.parse(content);
+            $('#parsed').innerHTML = marked.parse(content);
             $('textarea').rows = Math.ceil(content.split('\n').length * 1.5);
         });
         $('textarea').dispatchEvent(new Event('input'));
