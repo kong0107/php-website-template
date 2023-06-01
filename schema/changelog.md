@@ -1,8 +1,13 @@
 # 更新日誌
 
 
-# v1.2.2
+# v1.2.3
+230601
+- 登入後導回原本的頁面。
 
+
+# v1.2.2
+230503
 - 前台網址標準化：引入 `<link name="canonical">` 。
 - 用 `<meta name="referrer">` 設定 Referrer Policy 。
 

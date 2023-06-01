@@ -67,7 +67,7 @@
         <meta itemprop="headline" property="og:title" content="<?= $page_info['title'] ?>">
         <meta property="og:type" content="article">
     <?php endif; ?>
-    <meta property="og:CONFIG['site.name']" content="<?= CONFIG['site.name'] ?>">
+    <meta property="og:site_name" content="<?= CONFIG['site.name'] ?>">
 
     <?php if(!empty($page_info['description'])): ?>
         <meta itemprop="description" property="og:description" name="description"
@@ -87,7 +87,7 @@
     <link rel="icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>" referrerpolicy="origin">
     <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>" referrerpolicy="origin">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" referrerpolicy="origin"></script>
-    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.2/dist/all.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.5/dist/all.js" referrerpolicy="origin"></script>
     <script src="assets/main.js?mtime=<?= stat(__DIR__ . '/assets/main.js')['mtime'] ?>"></script>
     <link rel="stylesheet" href="assets/main.css?mtime=<?= stat(__DIR__ . '/assets/main.css')['mtime'] ?>">
 

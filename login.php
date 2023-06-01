@@ -32,7 +32,15 @@ if(empty($_GET['logout']) && empty($_GET['code'])) {
             site_log('warning: session has already been started; could not set `session.cookie_lifetime` in ' . __FILE__);
         }
     }
-    $_SESSION['csrf_token'] = base64url_encode(random_bytes(24));
+
+    /**
+     * 加入防止 CSRF 的暫存亂數，後面接上前一頁的位址，以便登入完成後轉址回去。
+     */
+    $state = $_SESSION['csrf_token'] = base64url_encode(random_bytes(24));
+    if (str_starts_with($_SERVER['HTTP_REFERER'], CONFIG['site.root'])) {
+        $referer = substr($_SERVER['HTTP_REFERER'], strlen(CONFIG['site.root']));
+        if (!str_starts_with($referer, 'login.php')) $state .= $referer;
+    }
 
     $query = http_build_query([
         'access_type' => 'offline',
@@ -40,7 +48,7 @@ if(empty($_GET['logout']) && empty($_GET['code'])) {
         'redirect_uri' => CONFIG['site.root'] . 'login.php',
         'response_type' => 'code',
         'scope' => 'openid profile email',
-        'state' => $_SESSION['csrf_token']
+        'state' => $state
     ]);
     redirect('https://accounts.google.com/o/oauth2/v2/auth?' . $query);
 }
@@ -55,6 +63,7 @@ require_once './lib/start.php';
  * 處理登出。
  */
 if($Get->logout) {
+    site_log('%s 主動登出了。', $_SESSION['user']->identifier);
     $db->insert('log_login', [
         'person' => $_SESSION['user']->identifier,
         'action' => 'logout-by-user',
@@ -72,7 +81,7 @@ if($Get->logout) {
 $csrf_token = $Session->csrf_token;
 unset($Session->csrf_token); // 先清掉，省得要擔心會再被利用
 
-if($csrf_token !== $Get->state) {
+if (!str_starts_with($Get->state, $csrf_token)) {
     site_log('未通過 STP 測試，可能是逾時或是 CSRF 。');
     redirect('login.php'); // 重新再讀一次本頁，但不帶參數，即可因上面的程式而轉去登入。
 }
@@ -116,4 +125,4 @@ $Session->user = (object) array_merge($user, [
     'access_expire' => $id_token->exp
 ]);
 
-redirect('./');
+redirect('./' . substr($Get->state, strlen($csrf_token)));
