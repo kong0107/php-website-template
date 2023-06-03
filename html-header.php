@@ -86,7 +86,7 @@
     <base href="<?= CONFIG['site.root'] ?>">
     <link rel="icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>" referrerpolicy="origin">
     <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>" referrerpolicy="origin">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" referrerpolicy="origin"></script>
     <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.5/dist/all.js" referrerpolicy="origin"></script>
     <script src="assets/main.js?mtime=<?= stat(__DIR__ . '/assets/main.js')['mtime'] ?>"></script>
     <link rel="stylesheet" href="assets/main.css?mtime=<?= stat(__DIR__ . '/assets/main.css')['mtime'] ?>">

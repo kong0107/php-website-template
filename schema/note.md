@@ -39,7 +39,7 @@ CSS Class 用 `kebab-case` 格式。
 * `<link rel="apple-touch-icon" href>` 是參考 [Apple 官網文件](https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html)。
 * 麵包屑參考：
   * https://www.w3.org/WAI/ARIA/apg/example-index/breadcrumb/index.html
-  * https://getbootstrap.com/docs/5.2/components/breadcrumb/
+  * https://getbootstrap.com/docs/5.3/components/breadcrumb/
   * https://schema.org/BreadcrumbList
 
 ### 標籤屬性順序
