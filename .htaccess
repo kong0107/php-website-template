@@ -6,13 +6,24 @@ DirectoryIndex index.php index.html
     Options FollowSymLinks
     RewriteEngine On
 
+    # 強制 HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,QSA,L]
+
     # 允許爬蟲
     RewriteRule ^robots\.txt$ - [L]
+
+    # 禁止連向隱藏目錄或隱藏檔
+    RewriteRule ^\. error.php?status=404 [QSA,L]
+    RewriteRule /\. error.php?status=404 [QSA,L]
 
     # 錯誤頁面
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ error.php?status=404 [L]
+
+    # favicon.ico （僅本專案為根目錄時有效）
+    Redirect "/favicon.ico" "https://fakeimg.pl/256x256/?text=kong0107"
 
     # 防盜連
     RewriteCond expr "! %{HTTP_REFERER} -strmatch '*://%{HTTP_HOST}/*'"

@@ -1,5 +1,4 @@
 <?php
-require_once 'functions.php';
 
 class mysqlii extends mysqli {
     protected $counter = 0;
@@ -10,19 +9,18 @@ class mysqlii extends mysqli {
      */
     #[\ReturnTypeWillChange]
     public function query(
-        /*string*/ $sql,
-        /*mixed*/ ...$values
+        /*string*/ $query,
+        /*int*/ $result_mode = NULL
     ) /*: mysqli_result|bool*/ {
-        if(count($values)) $sql = sprintf($sql, ...$values);
-        // site_log('SQL %d: %s', ++$this->counter, $sql);
+        // site_log('SQL %d: %s', ++$this->counter, $query);
         try {
-            return parent::query($sql);
+            return parent::query($query);
         }
         catch (mysqli_sql_exception $e) {
             $errno = $e->getCode();
             site_log(
                 "Database Error %d: %s\n%s",
-                $e->getCode(), $e->getMessage(), $sql
+                $e->getCode(), $e->getMessage(), $query
             );
         }
         return false;
@@ -36,7 +34,7 @@ class mysqlii extends mysqli {
         string $sql,
         /*mixed*/ ...$values
     ) {
-        $result = $this->query($sql, ...$values);
+        $result = $this->query(sprintf($sql, ...$values));
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : false;
     }
 
@@ -48,11 +46,11 @@ class mysqlii extends mysqli {
         string $sql,
         /*mixed*/ ...$values
     ) {
-        $result = $this->query($sql, ...$values);
+        $result = $this->query(sprintf($sql, ...$values));
         if(!$result) return false;
         $ret = array();
         // while($v = $result->fetch_column()) $ret[] = $v; // PHP 8.1 or later
-        while($row = $result->fetch_row()) $ret[] = $row[0];
+        while ($row = $result->fetch_row()) $ret[] = $row[0];
         return $ret;
     }
 
@@ -64,11 +62,11 @@ class mysqlii extends mysqli {
         string $sql,
         /*mixed*/ ...$values
     ) {
-        $result = $this->query($sql, ...$values);
+        $result = $this->query(sprintf($sql, ...$values));
         // return $result ? $result->fetch_column() : false; // PHP 8.1 or later
-        if(!$result) return false;
+        if (! $result) return false;
         $row = $result->fetch_row();
-        return $row[0];
+        return is_array($row) ? $row[0] : null;
     }
 
     /**
@@ -79,7 +77,7 @@ class mysqlii extends mysqli {
         string $sql,
         /*mixed*/ ...$values
     ) {
-        $result = $this->query($sql, ...$values);
+        $result = $this->query(sprintf($sql, ...$values));
         return $result ? $result->fetch_assoc() : false;
     }
 
@@ -89,15 +87,13 @@ class mysqlii extends mysqli {
      */
     public function insert(
         string $table_name,
-        array $data,
-        bool $test = false
+        array $data
     ) {
         $sql = sprintf(
             'INSERT INTO `%s` SET %s',
             self::escape($table_name),
             self::join_assoc($data, ',')
         );
-        if($test) return $sql;
         return $this->query($sql) ? $this->insert_id : false;
     }
 
@@ -107,10 +103,9 @@ class mysqlii extends mysqli {
      */
     public function insert_multi(
         string $table_name,
-        array $data,
-        bool $test = false
+        array $data
     ) {
-        if(!array_is_list($data)) $data = [$data];
+        if (! array_is_list($data)) $data = [$data];
         $keys = [];
         foreach($data as $row)
             $keys = array_merge($keys, array_diff(array_keys($row), $keys));
@@ -133,7 +128,6 @@ class mysqlii extends mysqli {
         }
         $sql .= implode(",\n", $rows);
 
-        if($test) return $sql;
         return $this->query($sql) ? $this->affected_rows : false;
     }
 
@@ -143,17 +137,15 @@ class mysqlii extends mysqli {
      */
     public function select_all(
         string $table_name,
-        array $conditions = [],
-        bool $test = false
+        array $conditions = []
     ) {
         $sql = sprintf(
             'SELECT * FROM `%s`',
             self::escape($table_name)
         );
-        if(count($conditions))
+        if (count($conditions))
             $sql .= ' WHERE ' . self::join_assoc($conditions);
 
-        if($test) return $sql;
         return $this->get_all($sql);
     }
 
@@ -163,15 +155,13 @@ class mysqlii extends mysqli {
      */
     public function select_row(
         string $table_name,
-        array $conditions,
-        bool $test = false
+        array $conditions
     ) {
         $sql = sprintf(
             'SELECT * FROM `%s` WHERE %s LIMIT 1',
             self::escape($table_name),
             self::join_assoc($conditions)
         );
-        if($test) return $sql;
         return $this->get_row($sql);
     }
 
@@ -181,15 +171,14 @@ class mysqlii extends mysqli {
      */
     public function delete(
         string $table_name,
-        array $conditions,
-        bool $test = false
-    ) {
+        array $conditions
+    ) : bool {
         $sql = sprintf(
             'DELETE FROM `%s` WHERE %s',
             self::escape($table_name),
             self::join_assoc($conditions)
         );
-        return $test ? $sql : $this->query($sql);
+        return $this->query($sql);
     }
 
     /**
@@ -199,16 +188,15 @@ class mysqlii extends mysqli {
     public function update(
         string $table_name,
         array $data,
-        array $conditions,
-        bool $test = false
-    ) {
+        array $conditions
+    ) : bool {
         $sql = sprintf(
             'UPDATE %s SET %s WHERE %s',
             self::escape($table_name),
             self::join_assoc($data, ','),
             self::join_assoc($conditions)
         );
-        return $test ? $sql : $this->query($sql);
+        return $this->query($sql);
     }
 
     /**
@@ -218,8 +206,7 @@ class mysqlii extends mysqli {
      */
     public function replace(
         string $table_name,
-        array $data,
-        bool $test = false
+        array $data
     ) {
         $kv_pairs = self::join_assoc($data, ',');
         $sql = sprintf(
@@ -228,7 +215,6 @@ class mysqlii extends mysqli {
             $kv_pairs,
             $kv_pairs
         );
-        if($test) return $sql;
         return $this->query($sql) ? $this->insert_id : false;
     }
 
@@ -239,13 +225,13 @@ class mysqlii extends mysqli {
      */
     static public function escape(
         /*mixed*/ $str
-    ) {
+    ) : string {
         return strtr($str, [
             "\0" => "\\0",
             "\n" => "\\n",
             "\r" => "\\r",
             "\\" => "\\\\",
-            "\'" => "\\'",
+            "'" => "\\'",
             "\"" => "\\\"",
             "\x1a" => "\\x1a"
         ]);
@@ -258,7 +244,7 @@ class mysqlii extends mysqli {
     static public function join_assoc(
         array $assoc,
         string $glue = ' AND '
-    ) {
+    ) : string {
         $pieces = [];
         foreach($assoc as $key => $value) $pieces[] = sprintf("`%s` = '%s'", self::escape($key), self::escape($value));
         return implode($glue, $pieces);

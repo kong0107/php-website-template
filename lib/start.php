@@ -1,6 +1,5 @@
 <?php
 require_once 'init.php';
-require_once 'http.php';
 
 // 檢查與啟動 Session 。
 switch (session_status()) {
@@ -34,6 +33,7 @@ switch (session_status()) {
  */
 require_once 'database.php';
 try {
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
     $db = new mysqlii(
         CONFIG['mysqli.hostname'],
         CONFIG['mysqli.username'],

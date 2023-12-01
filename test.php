@@ -1,21 +1,21 @@
 <?php
-    /**
-     * 只在由本機連線時才能使用此頁。
-     *
-     * > $_SERVER['REMOTE_ADDR'] contains the real IP address of the connecting party. That is the most reliable value you can find.
-     * > However, they can be behind a proxy server in which case the proxy may have set the $_SERVER['HTTP_X_FORWARDED_FOR'], but this value is easily spoofed.
-     *
-     * > REMOTE_ADDR might not contain the real IP of the TCP connection. This entirely depends on your SAPI.
-     * --- https://stackoverflow.com/questions/3003145/#3003233
-     */
-    if(!in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'])) {
-        http_response_code(403);
-        exit;
-    }
+/**
+ * 只在由本機連線時才能使用此頁。
+ *
+ * > $_SERVER['REMOTE_ADDR'] contains the real IP address of the connecting party. That is the most reliable value you can find.
+ * > However, they can be behind a proxy server in which case the proxy may have set the $_SERVER['HTTP_X_FORWARDED_FOR'], but this value is easily spoofed.
+ *
+ * > REMOTE_ADDR might not contain the real IP of the TCP connection. This entirely depends on your SAPI.
+ * --- https://stackoverflow.com/questions/3003145/#3003233
+ */
+if (! in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'])) {
+    http_response_code(403);
+    exit;
+}
 
-    $use_composer = is_file('composer.json');
-    $config = parse_ini_file('var/config.ini');
-    if($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'var/logs/';
+$use_composer = is_file('composer.json');
+$config = parse_ini_file('var/config.ini');
+if($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'var/logs/';
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
@@ -24,7 +24,7 @@
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>網站設定測試</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0">
 </head>
 <body class="container">

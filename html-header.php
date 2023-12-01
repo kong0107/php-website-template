@@ -1,53 +1,31 @@
 <?php
-    // 若已被引用過，並不會重複引用。
-    require_once __DIR__ . '/lib/start.php';
-    header('Content-Type: text/html; charset=UTF-8');
+require_once __DIR__ . '/lib/start.php';
 
-    // 本頁資訊，有可能先被設定過了。
-    if(empty($page_info)) $page_info = [];
+// 本頁資訊，有可能先被設定過了。
+if(empty($page_info)) $page_info = [];
 
-    /**
-     * $page_info['origin']
-     * 本頁通訊協定及網域，用於生成絕對路徑，也可用於確認同源政策。
-     * 只是暫時變數，用於生成其他變數的。
-     */
-    $page_info['origin'] = (empty($_SERVER['HTTPS']) ? 'http' : 'https')
-        . '://' . $_SERVER['SERVER_NAME']
-    ;
+/**
+ * og:url and canonical href
+ * 本頁的絕對路徑，用於 og:url 和 canonical ，分別是 Facebook 和 Google 辨認「雖然不同連結不太一樣，但其實是同一個網頁」的關鍵。
+ * 預設依照 $Get 整理；參數的順序可能是重要的。
+ * https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls?hl=zh-tw
+ * https://www.cnblogs.com/jianmingyuan/p/11049055.html
+ */
+if (! str_contains($_SERVER['PHP_SELF'], 'error.php')) {
+    $origin = substr(CONFIG['site.root'], 0, strpos(CONFIG['site.root'], '/', 10));
+    $page_info['canonical'] = $origin . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    if (! $Get->empty()) $page_info['canonical'] .= "?$Get";
+}
 
-    /**
-     * $page_info['canonical']
-     * 本頁的絕對路徑，用於 og:url 和 canonical ，分別是 Facebook 和 Google 辨認「雖然不同連結不太一樣，但其實是同一個網頁」的關鍵。
-     * 預設依照 $Get 整理；參數的順序可能是重要的。
-     * https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls?hl=zh-tw
-     * https://www.cnblogs.com/jianmingyuan/p/11049055.html
-     */
-    $page_info['canonical'] = $page_info['origin']
-        . $_SERVER['SCRIPT_NAME']
-        . ($Get->empty() ? '' : "?$Get")
-    ;
+/**
+ * og:image
+ * 縮圖的絕對路徑，用於 og:image ，即貼在臉書時會出現的圖示。
+ * 規範上可以多張，但先處理一張就好。
+ */
+if (! parse_url($page_info['og:image'], PHP_URL_SCHEME))
+    $page_info['og:image'] = CONFIG['site.root'] . $page_info['og:image'];
 
-    /**
-     * $page_info['og:image']
-     * 縮圖的絕對路徑，用於 og:image ，即貼在臉書時會出現的圖示。
-     * 規範上可以多張，但先處理一張就好。
-     */
-    if(empty($page_info['og:image'])) {
-        $page_info['og:image'] = 'https://fakeimg.pl/1200x630/282828/eae0d0/?font=noto&text=';
-        if(isset($page_info['title'])) $page_info['og:image'] .= $page_info['title'] . '%0a';
-        $page_info['og:image'] .= CONFIG['site.name'];
-    }
-    if(!parse_url($page_info['og:image'], PHP_URL_SCHEME)) {
-        $page_info['og:image'] = $page_info['origin']
-            . abspath(dirname($_SERVER['SCRIPT_NAME']) . '/' . $page_info['og:image']);
-    }
-
-    if(in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'])) {
-        echo '<!--' . chr(10);
-        var_dump($_SESSION);
-        var_dump(apache_request_headers());
-        echo chr(10) . '-->';
-    }
+header('Content-Type: text/html; charset=UTF-8');
 ?>
 <!DOCTYPE html>
 <html lang="<?= CONFIG['language'] ?>" itemtype="WebPage">
@@ -86,10 +64,10 @@
     <base href="<?= CONFIG['site.root'] ?>">
     <link rel="icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>" referrerpolicy="origin">
     <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>" referrerpolicy="origin">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" referrerpolicy="origin"></script>
-    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.5/dist/all.js" referrerpolicy="origin"></script>
-    <script src="assets/main.js?mtime=<?= stat(__DIR__ . '/assets/main.js')['mtime'] ?>"></script>
-    <link rel="stylesheet" href="assets/main.css?mtime=<?= stat(__DIR__ . '/assets/main.css')['mtime'] ?>">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.7/dist/all.js" referrerpolicy="origin"></script>
+    <script src="assets/main.js?mtime=<?= filemtime('assets/main.js') ?>"></script>
+    <link rel="stylesheet" href="assets/main.css?mtime=<?= filemtime('assets/main.css') ?>">
 
     <?= $page_info['html_head'] ?? '' ?>
 </head>

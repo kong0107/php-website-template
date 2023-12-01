@@ -100,66 +100,6 @@ function error_output(
     exit;
 }
 
-
-/******** 字串處理 ********/
-
-/**
- * 移除路徑中的 `/.` 和 `/..` 。
- * 參考 https://www.php.net/manual/zh/function.realpath.php#84012
- * 但改為最前面會有斜線。
- */
-function abspath(
-    string $path
-) : string {
-    $path = str_replace('\\', '/', $path);
-    $parts = array_filter(explode('/', $path), 'strlen');
-    $needed = array();
-    foreach($parts as $p) {
-        if($p === '.') continue;
-        if($p === '..') array_pop($needed);
-        else $needed[] = $p;
-    }
-    return '/' . implode('/', $needed);
-}
-
-function base64url_encode(
-    string $string
-) : string {
-    return rtrim(strtr(base64_encode($string), '+/', '-_'), '=');
-}
-
-function base64url_decode(
-    string $string
-) : string {
-    return base64_decode(str_pad(
-        strtr($string, '-_', '+/'),
-        strlen($string) % 4,
-        '='
-    ));
-}
-
-function jwt_decode($token) {
-    $parts = explode('.', $token);
-    return (object) [
-        'header' => json_decode(base64url_decode($parts[0])),
-        'payload' => json_decode(base64url_decode($parts[1]))
-    ];
-}
-
-function parse_dataurl($url) {
-    if(preg_match('/^data:(\w+)\/([\w\.\-]+);base64,/', $url, $matches)) {
-        return array(
-            'type' => $matchs[0],
-            'subtype' => $matches[1],
-            'base64' => substr($url, strlen($matches[0]))
-        );
-    }
-    else throw new Exception('not a data URL');
-}
-
-
-/******** 載入字典、商品分類、… ********/
-
 /**
  * 載入 `vocabulary.csv` 然後留下有翻譯過的，傳回關聯陣列作為字典。
  */
