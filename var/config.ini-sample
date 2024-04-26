@@ -21,7 +21,7 @@ site.name = "這是網站名稱"
 site.root = "https://locaolhost/php-website-template/"
 
 ; powered by
-powered_by = "睿智數位工作室"
+powered_by = "睿智高功能工作室"
 
 
 [MySQLi] ; also used for MariaDB

@@ -22,7 +22,7 @@ if (! str_contains($_SERVER['PHP_SELF'], 'error.php')) {
  * 縮圖的絕對路徑，用於 og:image ，即貼在臉書時會出現的圖示。
  * 規範上可以多張，但先處理一張就好。
  */
-if (! parse_url($page_info['og:image'], PHP_URL_SCHEME))
+if (isset($page_info['og:image']) && ! parse_url($page_info['og:image'], PHP_URL_SCHEME))
     $page_info['og:image'] = CONFIG['site.root'] . $page_info['og:image'];
 
 header('Content-Type: text/html; charset=UTF-8');
@@ -31,10 +31,9 @@ header('Content-Type: text/html; charset=UTF-8');
 <html lang="<?= CONFIG['language'] ?>" itemtype="WebPage">
 <head>
     <meta charset="UTF-8">
-    <meta name="referrer" content="no-referrer-when-downgrade">
-
     <meta property="og:locale" content="<?= CONFIG['locale'] ?>">
     <meta itemprop="inLanguage" content="<?= CONFIG['language'] ?>">
+    <meta name="referrer" content="no-referrer-when-downgrade">
 
     <?php if(empty($page_info['title'])): ?>
         <title><?= CONFIG['site.name'] ?></title>
@@ -58,7 +57,9 @@ header('Content-Type: text/html; charset=UTF-8');
 
     <link rel="canonical" href="<?= $page_info['canonical'] ?>">
     <meta property="og:url" content="<?= $page_info['canonical'] ?>">
-    <meta itemprop="primaryImageOfPage" property="og:image" content="<?= $page_info['og:image'] ?>">
+    <?php if (isset($page_info['og:image'])): ?>
+        <meta itemprop="primaryImageOfPage" property="og:image" content="<?= $page_info['og:image'] ?>">
+    <?php endif; ?>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <base href="<?= CONFIG['site.root'] ?>">

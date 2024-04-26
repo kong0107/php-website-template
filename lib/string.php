@@ -19,7 +19,7 @@ function base64url_decode(
 function jwt_decode(
     string $token,
     ?bool $associative = false
-) : object|array {
+) /*: object|array*/ {
     $parts = explode('.', $token);
     $result = [
         'header' => json_decode(base64url_decode($parts[0])),
@@ -39,4 +39,10 @@ function parse_dataurl(
         );
     }
     else throw new Exception('not a data URL');
+}
+
+function hsc(
+    /*mixed*/ $str
+) /*: mixed*/ {
+    return is_string($str) ? htmlspecialchars($str) : $str;
 }
