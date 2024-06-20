@@ -15,7 +15,7 @@ if (! in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1'])) {
 
 $use_composer = is_file('composer.json');
 $config = parse_ini_file('var/config.ini');
-if($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'var/logs/';
+if ($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'var/logs/';
 ?>
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
@@ -24,14 +24,14 @@ if($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'var/logs/';
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>網站設定測試</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0">
 </head>
 <body class="container">
     <h1 class="my-3">網站設定測試</h1>
     <ul class="list-unstyled">
         <li aria-label="設定檔" class="d-flex">
-            <?php if($config): ?>
+            <?php if ($config): ?>
                 <span class="material-symbols-outlined text-success"
                 >check</span>
                 <p>成功載入設定檔，網站名稱為 <mark><?= $config['site.name'] ?></mark>。</p>
@@ -48,8 +48,8 @@ if($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'var/logs/';
             <?php endif; ?>
         </li>
         <li aria-label="安裝套件" class="d-flex">
-            <?php if($use_composer): ?>
-                <?php if(@ include './vendor/autoload.php'): ?>
+            <?php if ($use_composer): ?>
+                <?php if (@ include './vendor/autoload.php'): ?>
                     <span class="material-symbols-outlined text-success"
                     >check</span>
                     <p>成功載入套件。</p>
@@ -73,7 +73,7 @@ if($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'var/logs/';
             <?php endif; ?>
         </li>
         <li aria-label="Session" class="d-flex">
-            <?php if(session_status() !== PHP_SESSION_DISABLED): ?>
+            <?php if (session_status() !== PHP_SESSION_DISABLED): ?>
                 <span class="material-symbols-outlined text-success"
                 >check</span>
                 <p>可以啟用 Session 功能。</p>
@@ -91,10 +91,10 @@ if($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'var/logs/';
         </li>
         <li aria-label="記錄檔" class="d-flex">
             <?php
-                if($config):
-                    if(@ opendir($log_dir)):
+                if ($config):
+                    if (@ opendir($log_dir)):
                         closedir();
-                        if(strpos(realpath($log_dir), realpath(getenv('DOCUMENT_ROOT'))) === 0):
+                        if (strpos(realpath($log_dir), realpath(getenv('DOCUMENT_ROOT'))) === 0):
                             ?>
                                 <div id="log_dir_message_info" class="d-flex">
                                     <span class="material-symbols-outlined text-info"
@@ -131,10 +131,10 @@ if($config) $log_dir = $config['log_dir'] ? $config['log_dir'] : 'var/logs/';
             ?>
         </li>
         <li aria-label="資料庫" class="d-flex">
-            <?php if(class_exists('mysqli')): ?>
-                <?php if($config): ?>
+            <?php if (class_exists('mysqli')): ?>
+                <?php if ($config): ?>
                     <?php
-                        if($config['mysqli.username']):
+                        if ($config['mysqli.username']):
                             try {
                                 $db = new mysqli(
                                     $config['mysqli.hostname'],

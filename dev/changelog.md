@@ -1,5 +1,8 @@
 # 更新日誌
 
+# 240620
+- Update Bootstrap and KongUtil.
+- Prevent XSS.
 
 # v1.2.3
 230601

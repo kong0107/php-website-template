@@ -1,6 +1,6 @@
 /*
- * CKEditor 5 (v40.1.0) content styles.
- * Generated on Wed, 29 Nov 2023 12:59:58 GMT.
+ * CKEditor 5 (v41.4.2) content styles.
+ * Generated on Thu, 13 Jun 2024 06:55:12 GMT.
  * For more information, check out https://ckeditor.com/docs/ckeditor5/latest/installation/advanced/content-styles.html
  */
 
@@ -35,18 +35,6 @@
 .ck-content .table th {
     overflow-wrap: break-word;
     position: relative;
-}
-/* @ckeditor/ckeditor5-table/theme/tablecaption.css */
-.ck-content .table > figcaption {
-    display: table-caption;
-    caption-side: top;
-    word-break: break-word;
-    text-align: center;
-    color: var(--ck-color-selector-caption-text);
-    background-color: var(--ck-color-selector-caption-background);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
 }
 /* @ckeditor/ckeditor5-table/theme/table.css */
 .ck-content .table {
@@ -274,24 +262,6 @@ margin-left: -15px;
 .ck-editor__editable.ck-content .todo-list .todo-list__label.todo-list__label_without-description input[type=checkbox] {
     position: absolute;
 }
-/* @ckeditor/ckeditor5-image/theme/imageresize.css */
-.ck-content img.image_resized {
-    height: auto;
-}
-/* @ckeditor/ckeditor5-image/theme/imageresize.css */
-.ck-content .image.image_resized {
-    max-width: 100%;
-    display: block;
-    box-sizing: border-box;
-}
-/* @ckeditor/ckeditor5-image/theme/imageresize.css */
-.ck-content .image.image_resized img {
-    width: 100%;
-}
-/* @ckeditor/ckeditor5-image/theme/imageresize.css */
-.ck-content .image.image_resized > figcaption {
-    display: block;
-}
 /* @ckeditor/ckeditor5-image/theme/image.css */
 .ck-content .image {
     display: table;
@@ -330,42 +300,23 @@ margin-left: -15px;
     flex-shrink: 1;
     max-width: 100%;
 }
-/* @ckeditor/ckeditor5-image/theme/imagecaption.css */
-.ck-content .image > figcaption {
-    display: table-caption;
-    caption-side: bottom;
-    word-break: break-word;
-    color: var(--ck-color-image-caption-text);
-    background-color: var(--ck-color-image-caption-background);
-    padding: .6em;
-    font-size: .75em;
-    outline-offset: -1px;
+/* @ckeditor/ckeditor5-image/theme/imageresize.css */
+.ck-content img.image_resized {
+    height: auto;
 }
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-yellow {
-    background-color: var(--ck-highlight-marker-yellow);
+/* @ckeditor/ckeditor5-image/theme/imageresize.css */
+.ck-content .image.image_resized {
+    max-width: 100%;
+    display: block;
+    box-sizing: border-box;
 }
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-green {
-    background-color: var(--ck-highlight-marker-green);
+/* @ckeditor/ckeditor5-image/theme/imageresize.css */
+.ck-content .image.image_resized img {
+    width: 100%;
 }
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-pink {
-    background-color: var(--ck-highlight-marker-pink);
-}
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .marker-blue {
-    background-color: var(--ck-highlight-marker-blue);
-}
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .pen-red {
-    color: var(--ck-highlight-pen-red);
-    background-color: transparent;
-}
-/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
-.ck-content .pen-green {
-    color: var(--ck-highlight-pen-green);
-    background-color: transparent;
+/* @ckeditor/ckeditor5-image/theme/imageresize.css */
+.ck-content .image.image_resized > figcaption {
+    display: block;
 }
 /* @ckeditor/ckeditor5-list/theme/list.css */
 .ck-content ol {
@@ -464,6 +415,32 @@ margin-left: -15px;
 .ck-content .image-inline.image-style-align-right {
     margin-left: var(--ck-inline-image-style-spacing);
 }
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-yellow {
+    background-color: var(--ck-highlight-marker-yellow);
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-green {
+    background-color: var(--ck-highlight-marker-green);
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-pink {
+    background-color: var(--ck-highlight-marker-pink);
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .marker-blue {
+    background-color: var(--ck-highlight-marker-blue);
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .pen-red {
+    color: var(--ck-highlight-pen-red);
+    background-color: transparent;
+}
+/* @ckeditor/ckeditor5-highlight/theme/highlight.css */
+.ck-content .pen-green {
+    color: var(--ck-highlight-pen-green);
+    background-color: transparent;
+}
 /* @ckeditor/ckeditor5-block-quote/theme/blockquote.css */
 .ck-content blockquote {
     overflow: hidden;
@@ -506,6 +483,29 @@ margin-left: -15px;
     background: var(--ck-color-mention-background);
     color: var(--ck-color-mention-text);
 }
+/* @ckeditor/ckeditor5-table/theme/tablecaption.css */
+.ck-content .table > figcaption {
+    display: table-caption;
+    caption-side: top;
+    word-break: break-word;
+    text-align: center;
+    color: var(--ck-color-selector-caption-text);
+    background-color: var(--ck-color-selector-caption-background);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
+}
+/* @ckeditor/ckeditor5-image/theme/imagecaption.css */
+.ck-content .image > figcaption {
+    display: table-caption;
+    caption-side: bottom;
+    word-break: break-word;
+    color: var(--ck-color-image-caption-text);
+    background-color: var(--ck-color-image-caption-background);
+    padding: .6em;
+    font-size: .75em;
+    outline-offset: -1px;
+}
 /* @ckeditor/ckeditor5-horizontal-line/theme/horizontalline.css */
 .ck-content hr {
     margin: 15px 0;
@@ -541,5 +541,27 @@ margin-left: -15px;
     /* @ckeditor/ckeditor5-page-break/theme/pagebreak.css */
     .ck-content .page-break::after {
         display: none;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    /* @ckeditor/ckeditor5-list/theme/todolist.css */
+    .ck-content .todo-list .todo-list__label > input::before {
+            transition: none;
+    }
+    /* @ckeditor/ckeditor5-list/theme/todolist.css */
+    .ck-editor__editable.ck-content .todo-list .todo-list__label > span[contenteditable=false] > input::before {
+            transition: none;
+    }
+}
+@media (forced-colors: active) {
+    /* @ckeditor/ckeditor5-table/theme/tablecaption.css */
+    .ck-content .table > figcaption {
+    background-color: unset;
+    color: unset;
+    }
+    /* @ckeditor/ckeditor5-image/theme/imagecaption.css */
+    .ck-content .image > figcaption {
+            background-color: unset;
+            color: unset;
     }
 }

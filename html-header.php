@@ -2,7 +2,7 @@
 require_once __DIR__ . '/lib/start.php';
 
 // 本頁資訊，有可能先被設定過了。
-if(empty($page_info)) $page_info = [];
+if (empty($page_info)) $page_info = [];
 
 /**
  * og:url and canonical href
@@ -11,9 +11,9 @@ if(empty($page_info)) $page_info = [];
  * https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls?hl=zh-tw
  * https://www.cnblogs.com/jianmingyuan/p/11049055.html
  */
-if (! str_contains($_SERVER['PHP_SELF'], 'error.php')) {
+if (! str_contains($_SERVER['SCRIPT_NAME'], 'error.php')) {
     $origin = substr(CONFIG['site.root'], 0, strpos(CONFIG['site.root'], '/', 10));
-    $page_info['canonical'] = $origin . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $page_info['canonical'] = $origin . parse_url($_SERVER['SCRIPT_NAME'], PHP_URL_PATH);
     if (! $Get->empty()) $page_info['canonical'] .= "?$Get";
 }
 
@@ -33,9 +33,8 @@ header('Content-Type: text/html; charset=UTF-8');
     <meta charset="UTF-8">
     <meta property="og:locale" content="<?= CONFIG['locale'] ?>">
     <meta itemprop="inLanguage" content="<?= CONFIG['language'] ?>">
-    <meta name="referrer" content="no-referrer-when-downgrade">
 
-    <?php if(empty($page_info['title'])): ?>
+    <?php if (empty($page_info['title'])): ?>
         <title><?= CONFIG['site.name'] ?></title>
         <meta itemprop="headline" property="og:title" content="<?= CONFIG['site.name'] ?>">
         <meta property="og:type" content="website">
@@ -46,7 +45,7 @@ header('Content-Type: text/html; charset=UTF-8');
     <?php endif; ?>
     <meta property="og:site_name" content="<?= CONFIG['site.name'] ?>">
 
-    <?php if(!empty($page_info['description'])): ?>
+    <?php if (! empty($page_info['description'])): ?>
         <meta itemprop="description" property="og:description" name="description"
             content="<?= $page_info['description'] ?>"
         >
@@ -65,8 +64,8 @@ header('Content-Type: text/html; charset=UTF-8');
     <base href="<?= CONFIG['site.root'] ?>">
     <link rel="icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>" referrerpolicy="origin">
     <link rel="apple-touch-icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>" referrerpolicy="origin">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" referrerpolicy="origin"></script>
-    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.7/dist/all.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.10/dist/all.js" referrerpolicy="origin"></script>
     <script src="assets/main.js?mtime=<?= filemtime('assets/main.js') ?>"></script>
     <link rel="stylesheet" href="assets/main.css?mtime=<?= filemtime('assets/main.css') ?>">
 
@@ -81,13 +80,13 @@ header('Content-Type: text/html; charset=UTF-8');
                     <menu class="nav mt-0">
                         <li class="nav-item"><a class="nav-link" href="about.php">關於</a></li>
                         <li class="nav-item"><a class="nav-link" href="#">其他</a></li>
-                        <?php if($Session->user): ?>
+                        <?php if ($Session->user): ?>
                             <li class="nav-item">
                                 <a class="nav-link d-flex" href="login.php?logout=1"
                                     title="<?= $Session->user->givenName ?> <?= $Session->user->familyName ?> &lt;<?= $Session->user->email ?>&gt;"
                                 >登出</a>
                             </li>
-                        <?php elseif(CONFIG['google.id']): ?>
+                        <?php elseif (CONFIG['google.id']): ?>
                             <?php
                                 /**
                                  * 使用 Google 商標是有限制的
@@ -108,7 +107,7 @@ header('Content-Type: text/html; charset=UTF-8');
                     </menu>
                 </div>
             </nav>
-            <?php if(!empty($page_info['breadcrumb_list'])): ?>
+            <?php if (! empty($page_info['breadcrumb_list'])): ?>
                 <nav aria-label="導覽標記">
                     <ol itemprop="breadcrumb" itemtype="BreadcrumbList"
                         class="breadcrumb"
@@ -116,11 +115,11 @@ header('Content-Type: text/html; charset=UTF-8');
                         <?php foreach($page_info['breadcrumb_list'] as $index => $bc): ?>
                             <li itemprop="itemListElement" itemtype="ListItem"
                                 class="breadcrumb-item"
-                                <?php if(empty($bc['url'])): ?>
+                                <?php if (empty($bc['url'])): ?>
                                     aria-current="page"
                                 <?php endif; ?>
                             >
-                                <?php if(empty($bc['url'])): ?>
+                                <?php if (empty($bc['url'])): ?>
                                     <span itemprop="name"><?= $bc['name'] ?></span>
                                 <?php else: ?>
                                     <a itemprop="item" href="<?= $bc['url'] ?>">
