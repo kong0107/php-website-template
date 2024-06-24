@@ -1,8 +1,6 @@
 <?php
 
 class mysqlii extends mysqli {
-    protected $counter = 0;
-
     /**
      * Execute a query, increase the counter, and log;
      * @return mysqli_result|false
@@ -12,7 +10,6 @@ class mysqlii extends mysqli {
         /*string*/ $query,
         /*int*/ $result_mode = NULL
     ) /*: mysqli_result|bool*/ {
-        // site_log('SQL %d: %s', ++$this->counter, $query);
         try {
             return parent::query($query);
         }
@@ -34,7 +31,8 @@ class mysqlii extends mysqli {
         string $sql,
         /*mixed*/ ...$values
     ) {
-        $result = $this->query(sprintf($sql, ...$values));
+        if (count($values)) $sql = sprintf($sql, ...$values);
+        $result = $this->query($sql);
         return $result ? $result->fetch_all(MYSQLI_ASSOC) : false;
     }
 
@@ -46,7 +44,8 @@ class mysqlii extends mysqli {
         string $sql,
         /*mixed*/ ...$values
     ) {
-        $result = $this->query(sprintf($sql, ...$values));
+        if (count($values)) $sql = sprintf($sql, ...$values);
+        $result = $this->query($sql);
         if(!$result) return false;
         $ret = array();
         // while($v = $result->fetch_column()) $ret[] = $v; // PHP 8.1 or later
@@ -62,7 +61,8 @@ class mysqlii extends mysqli {
         string $sql,
         /*mixed*/ ...$values
     ) {
-        $result = $this->query(sprintf($sql, ...$values));
+        if (count($values)) $sql = sprintf($sql, ...$values);
+        $result = $this->query($sql);
         // return $result ? $result->fetch_column() : false; // PHP 8.1 or later
         if (! $result) return false;
         $row = $result->fetch_row();
@@ -77,7 +77,8 @@ class mysqlii extends mysqli {
         string $sql,
         /*mixed*/ ...$values
     ) {
-        $result = $this->query(sprintf($sql, ...$values));
+        if (count($values)) $sql = sprintf($sql, ...$values);
+        $result = $this->query($sql);
         return $result ? $result->fetch_assoc() : false;
     }
 
@@ -191,7 +192,7 @@ class mysqlii extends mysqli {
         array $conditions
     ) : bool {
         $sql = sprintf(
-            'UPDATE %s SET %s WHERE %s',
+            'UPDATE `%s` SET %s WHERE %s',
             self::escape($table_name),
             self::join_assoc($data, ','),
             self::join_assoc($conditions)
