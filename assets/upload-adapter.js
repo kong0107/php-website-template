@@ -31,7 +31,7 @@ class UploadAdapter {
      */
     async upload(file, path) {
         const chunkSize = 2 * 1024 * 1024; // shall be smaller than `upload_max_filesize` in `php.ini`
-        if (!file) file = await this.loader.file;
+        if (! file) file = await this.loader.file;
 
         let blob = file;
         if (file.type.startsWith('image/')) {

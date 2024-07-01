@@ -10,10 +10,10 @@ $files = [
     'privacy' => '隱私權政策'
 ];
 
-if($content = trim($Post->content)) {
-    if(!array_key_exists($Get->name, $files))
+if ($content = trim($Post->content)) {
+    if (! array_key_exists($Get->name, $files))
         exit('no such file');
-    if(!file_put_contents("../var/markdown/{$Get->name}.md", $content . "\r\n"))
+    if (! file_put_contents("../var/markdown/{$Get->name}.md", $content . "\r\n"))
         exit('write failure');
     $message = date('m/d H:i:s ') . '儲存';
 }
@@ -25,11 +25,11 @@ require 'html-header.php';
 
 <h1 class="fs-3">文檔管理</h1>
 
-<?php if(isset($message)): ?>
+<?php if (isset($message)): ?>
     <span class="badge text-bg-success"><?= $message ?></span>
 <?php endif; ?>
 
-<?php if($Get->name): ?>
+<?php if ($Get->name): ?>
     <form method="post" class="row">
         <div class="col-md-6">
             <header>
@@ -60,7 +60,7 @@ require 'html-header.php';
     </script>
 <?php else: ?>
     <div class="row">
-        <?php foreach($files as $name => $title): ?>
+        <?php foreach ($files as $name => $title): ?>
             <section class="mb-4 col-lg-4 px-3 border-start border-success">
                 <div class="markdown mb-3" style="height: 50vh; overflow-y: auto;"
                 ><?= file_get_contents("../var/markdown/$name.md") ?></div>

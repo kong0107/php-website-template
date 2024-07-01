@@ -32,7 +32,7 @@
             <?php if (! empty($breadcrumb_list)): ?>
                 <nav aria-label="導覽標記">
                     <ol class="breadcrumb">
-                        <?php foreach($breadcrumb_list as $index => $bc): ?>
+                        <?php foreach ($breadcrumb_list as $index => $bc): ?>
                             <li class="breadcrumb-item">
                                 <a href="<?= $bc['url'] ?>"><?= $bc['name'] ?></a>
                             </li>

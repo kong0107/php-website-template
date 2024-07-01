@@ -13,7 +13,7 @@ require 'html-header.php';
 
 <h1><?= CONFIG['site.name'] ?></h1>
 
-<?php if($Session->user): ?>
+<?php if ($Session->user): ?>
     您好， <?= $Session->user->givenName ?> 。
     <a href="login.php?logout=1">登出</a>
 <?php endif; ?>

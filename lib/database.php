@@ -46,7 +46,7 @@ class mysqlii extends mysqli {
     ) {
         if (count($values)) $sql = sprintf($sql, ...$values);
         $result = $this->query($sql);
-        if(!$result) return false;
+        if (! $result) return false;
         $ret = array();
         // while($v = $result->fetch_column()) $ret[] = $v; // PHP 8.1 or later
         while ($row = $result->fetch_row()) $ret[] = $row[0];
@@ -108,7 +108,7 @@ class mysqlii extends mysqli {
     ) {
         if (! array_is_list($data)) $data = [$data];
         $keys = [];
-        foreach($data as $row)
+        foreach ($data as $row)
             $keys = array_merge($keys, array_diff(array_keys($row), $keys));
 
         $sql = sprintf(
@@ -118,9 +118,9 @@ class mysqlii extends mysqli {
         );
 
         $rows = [];
-        foreach($data as $row) {
+        foreach ($data as $row) {
             $cols = [];
-            foreach($keys as $key) {
+            foreach ($keys as $key) {
                 $cols[] = isset($row[$key])
                 ? (chr(0x27) . self::escape($row[$key]) . chr(0x27))
                 : 'NULL';
@@ -247,7 +247,7 @@ class mysqlii extends mysqli {
         string $glue = ' AND '
     ) : string {
         $pieces = [];
-        foreach($assoc as $key => $value) $pieces[] = sprintf("`%s` = '%s'", self::escape($key), self::escape($value));
+        foreach ($assoc as $key => $value) $pieces[] = sprintf("`%s` = '%s'", self::escape($key), self::escape($value));
         return implode($glue, $pieces);
     }
 }

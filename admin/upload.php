@@ -4,7 +4,7 @@ require_once 'authentication.php';
 $Post->convert(['counter' => 'int']);
 
 $file = $_FILES['file'];
-if($file['error'] !== UPLOAD_ERR_OK) onerror();
+if ($file['error'] !== UPLOAD_ERR_OK) onerror();
 // site_log($file);
 
 $type = isset($file['type'])
@@ -13,13 +13,13 @@ $type = isset($file['type'])
 ;
 
 $dir = '../file/' . date('ym');
-if(!is_dir($dir)) mkdir($dir, 0664);
+if (! is_dir($dir)) mkdir($dir, 0664);
 
 $path = sprintf('file/%s/%s_%02d.%s',
     date('ym'), date('ymd_His'), $Post->counter, $type
 );
 
-if(move_uploaded_file($file['tmp_name'], '../' . $path))
+if (move_uploaded_file($file['tmp_name'], '../' . $path))
     echo json_encode(['default' => $path]);
 else onerror();
 

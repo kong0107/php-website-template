@@ -9,8 +9,8 @@ require_once 'authentication.php';
 
 // 列出所有圖檔
 $files = [];
-foreach(scandir('../file/') as $dir) {
-    if(str_starts_with($dir, '.')) continue;
+foreach (scandir('../file/') as $dir) {
+    if (str_starts_with($dir, '.')) continue;
     $files = array_merge($files, scandir("../file/$dir"));
 }
 $files = array_diff($files, ['.', '..']);
@@ -33,10 +33,10 @@ require 'html-header.php';
 ?>
 
 <h1 class="fs-3">未被使用的圖片</h1>
-<?php if(!count($files)): ?>
+<?php if (! count($files)): ?>
     <p class="text-muted">沒有偵測到未被使用的圖片。</p>
 <?php endif; ?>
-<?php foreach($files as $basename): ?>
+<?php foreach ($files as $basename): ?>
     <details>
         <summary><?= $basename ?></summary>
         <button class="btn btn-warning">刪除</button>

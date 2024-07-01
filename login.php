@@ -16,8 +16,8 @@ require_once './lib/init.php';
 /**
  * 如果是直接連來這一頁，那就轉去 Google 的登入頁。
  */
-if(empty($_GET['logout']) && empty($_GET['code'])) {
-    switch(session_status()) {
+if (empty($_GET['logout']) && empty($_GET['code'])) {
+    switch (session_status()) {
         case PHP_SESSION_DISABLED: {
             site_log('error: session disabled');
             http_response_code(500);
@@ -39,7 +39,7 @@ if(empty($_GET['logout']) && empty($_GET['code'])) {
     $state = $_SESSION['csrf_token'] = base64url_encode(random_bytes(24));
     if (str_starts_with($_SERVER['HTTP_REFERER'], CONFIG['site.root'])) {
         $referer = substr($_SERVER['HTTP_REFERER'], strlen(CONFIG['site.root']));
-        if (!str_starts_with($referer, 'login.php')) $state .= $referer;
+        if (! str_starts_with($referer, 'login.php')) $state .= $referer;
     }
 
     $query = http_build_query([
@@ -62,7 +62,7 @@ require_once './lib/start.php';
 /**
  * 處理登出。
  */
-if($Get->logout) {
+if ($Get->logout) {
     site_log('%s 主動登出了。', $_SESSION['user']->identifier);
     $db->insert('log_login', [
         'person' => $_SESSION['user']->identifier,
@@ -81,7 +81,7 @@ if($Get->logout) {
 $csrf_token = $Session->csrf_token;
 unset($Session->csrf_token); // 先清掉，省得要擔心會再被利用
 
-if (!str_starts_with($Get->state, $csrf_token)) {
+if (! str_starts_with($Get->state, $csrf_token)) {
     site_log('未通過 STP 測試，可能是逾時或是 CSRF 。');
     redirect('login.php'); // 重新再讀一次本頁，但不帶參數，即可因上面的程式而轉去登入。
 }
@@ -95,7 +95,7 @@ try {
         'redirect_uri' => CONFIG['site.root'] . 'login.php'
     ]);
 }
-catch(Throwable $e) {
+catch (Throwable $e) {
     site_log('未能收到存取權杖。');
     error_output(401, '登入失敗。');
 }

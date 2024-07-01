@@ -81,11 +81,11 @@ function http_post(
             $header[] = 'Content-Type: multipart/form-data; boundary=' . $boundary;
 
             $string = '';
-            foreach($multipart as $part) {
+            foreach ($multipart as $part) {
                 $string .= "--$boundary\r\n";
                 $string .= "Content-Disposition: form-data; name=\"{$part['name']}\"";
-                if(isset($part['filename'])) $string .= "; filename=\"{$part['filename']}\"";
-                if(isset($part['type'])) $string .= "\r\nContent-Type: {$part['type']}";
+                if (isset($part['filename'])) $string .= "; filename=\"{$part['filename']}\"";
+                if (isset($part['type'])) $string .= "\r\nContent-Type: {$part['type']}";
                 $string .= "\r\n\r\n" . $part['value'] . "\r\n";
             }
             $content = "$string--$boundary--\r\n";
@@ -111,6 +111,6 @@ function http_post_json(
     array $header = array()
 ) {
     $header[] = 'Content-Type: application/json; charset=utf-8';
-    if(gettype($json) !== 'string') $json = json_encode($json);
+    if (gettype($json) !== 'string') $json = json_encode($json);
     return http_post($url, $json, $header);
 }

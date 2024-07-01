@@ -10,7 +10,7 @@ $width = intval($_GET['width'] ?? 128);
 $height = intval($_GET['height'] ?? 128);
 $quality = intval($_GET['quality'] ?? -1);
 
-if(!file_exists($filename) || (strpos($filename, '..') !== false)) {
+if (! file_exists($filename) || (strpos($filename, '..') !== false)) {
     http_response_code(403);
     header('Content-Type: image/svg+xml');
     readfile('assets/gpp_bad_FILL0_wght400_GRAD0_opsz48.svg');
@@ -20,12 +20,12 @@ if(!file_exists($filename) || (strpos($filename, '..') !== false)) {
 list($width_orig, $height_orig, $type) = getimagesize($filename);
 $ratio = $width_orig / $height_orig;
 
-if(isset($_GET['width']) xor isset($_GET['height'])) {
-    if(isset($_GET['height'])) $width = round($height * $ratio);
-    if(isset($_GET['width'])) $height = round($width / $ratio);
+if (isset($_GET['width']) xor isset($_GET['height'])) {
+    if (isset($_GET['height'])) $width = round($height * $ratio);
+    if (isset($_GET['width'])) $height = round($width / $ratio);
 }
 else {
-    if($width / $height > $ratio) $width = round($height * $ratio);
+    if ($width / $height > $ratio) $width = round($height * $ratio);
     else $height = round($width / $ratio);
 }
 
@@ -42,7 +42,7 @@ function imagecreatefromtype(
     int $type,
     string $filename
 )/* : GdImage */{
-    switch($type) {
+    switch ($type) {
         case IMAGETYPE_BMP: return imagecreatefrombmp($filename);
         case IMAGETYPE_GIF: return imagecreatefromgif($filename);
         case IMAGETYPE_PNG: return imagecreatefrompng($filename);
@@ -77,7 +77,7 @@ function imageoutput(
     /*mixed*/ $file = null,
     int $quality = -1
 ) : bool {
-    switch($type) {
+    switch ($type) {
         case IMAGETYPE_BMP: return imagebmp($image, $file, !!$quality); // true|false
         case IMAGETYPE_GIF: return imagegif($image, $file);
         case IMAGETYPE_PNG: return imagepng($image, $file, $quality); // 0~9

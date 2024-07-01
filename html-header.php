@@ -112,7 +112,7 @@ header('Content-Type: text/html; charset=UTF-8');
                     <ol itemprop="breadcrumb" itemtype="BreadcrumbList"
                         class="breadcrumb"
                     >
-                        <?php foreach($page_info['breadcrumb_list'] as $index => $bc): ?>
+                        <?php foreach ($page_info['breadcrumb_list'] as $index => $bc): ?>
                             <li itemprop="itemListElement" itemtype="ListItem"
                                 class="breadcrumb-item"
                                 <?php if (empty($bc['url'])): ?>

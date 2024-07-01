@@ -4,7 +4,7 @@ require_once __DIR__ . '/lib/start.php';
 if (empty($http_response)) { // 被 .htaccess 轉來的
     $status_code = intval($_GET['status'] ?? 404);
     $status_full = http_response_status_full($status_code);
-    switch(pathinfo($_SERVER['REQUEST_URI'], PATHINFO_EXTENSION)) {
+    switch (pathinfo($_SERVER['REQUEST_URI'], PATHINFO_EXTENSION)) {
         case 'svg':
         case 'jpg':
         case 'jpeg':
@@ -80,8 +80,8 @@ function http_response_status_full($code) {
         __DIR__ . '/schema/http-status-codes.txt',
         FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES
     );
-    foreach($codes as $line) {
-        if(strpos($line, strval($code)) === 0) {
+    foreach ($codes as $line) {
+        if (strpos($line, strval($code)) === 0) {
             return $line;
         }
     }

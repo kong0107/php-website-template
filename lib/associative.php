@@ -23,14 +23,14 @@ class Associative {
         array &$target,
         bool $by_reference = false
     ) {
-        if($this->by_reference = $by_reference) {
+        if ($this->by_reference = $by_reference) {
             $this->target = &$target;
             return;
         }
 
-        foreach($target as $key => $value) {
-            if(is_array($value)) {
-                if(array_is_list($value))
+        foreach ($target as $key => $value) {
+            if (is_array($value)) {
+                if (array_is_list($value))
                     $value = self::list_recursive($value);
                 else $value = new self($value);
             }
@@ -80,16 +80,16 @@ class Associative {
     public function convert(
         array $assoc = []
     ) : array {
-        foreach($assoc as $key => $type) {
+        foreach ($assoc as $key => $type) {
             $value = $origin = $this->target[$key] ?? NULL;
-            switch($type) {
+            switch ($type) {
                 case '*':
                 case 'any': {
                     break;
                 }
                 case 'bool':
                 case 'boolean': {
-                    if($origin) {
+                    if ($origin) {
                         $value = !preg_match('/^(0+|\x20+|\x{3000}+)$/u', $origin)
                             && !in_array(strtolower($origin), ['null', 'false', 'no', 'undefined']);
                     }
@@ -120,9 +120,9 @@ class Associative {
     public function to_array(
         array $keys = null
     ) : array {
-        if(is_null($keys)) return $this->target;
+        if (is_null($keys)) return $this->target;
         $result = [];
-        foreach($keys as $k) $result[$k] = $this->target[$k];
+        foreach ($keys as $k) $result[$k] = $this->target[$k];
         return $result;
     }
 
@@ -134,9 +134,9 @@ class Associative {
     public static function list_recursive(
         array $list
     ) : array {
-        if(!is_array($list[0])) return $list;
+        if (! is_array($list[0])) return $list;
         $new_list = [];
-        foreach($list as $item)
+        foreach ($list as $item)
             $new_list[] = new self($item);
         return $new_list;
     }

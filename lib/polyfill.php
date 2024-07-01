@@ -28,8 +28,8 @@ if (PHP_VERSION_ID < 80100) {
         array $array
     ) : bool {
         $i = 0;
-        foreach($array as $k => $v) {
-            if($k !== $i++) return false;
+        foreach ($array as $k => $v) {
+            if ($k !== $i++) return false;
         }
         return true;
     }

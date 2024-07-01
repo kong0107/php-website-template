@@ -11,7 +11,7 @@
             </div>
             <div>
                 <menu class="nav mt-0">
-                    <?php if($Session->user && $Session->user->role === 'admin'): ?>
+                    <?php if ($Session->user && $Session->user->role === 'admin'): ?>
                         <li class="nav-item"><a class="nav-link" href="admin/">管理後臺</a></li>
                     <?php endif; ?>
                     <li class="nav-item"><a class="nav-link" href="privacy.php">隱私權政策</a></li>

@@ -67,7 +67,7 @@ function redirect(
     int $seconds = 0
 ) : void {
     if ($seconds < 0) $seconds = 0;
-    if (!$seconds && !headers_sent()) header('Location: ' . $url);
+    if (! $seconds && ! headers_sent()) header('Location: ' . $url);
     use_html_template(array(
         'title' => '轉址',
         'html_head' => "
@@ -88,8 +88,8 @@ function error_output(
     string $mime_type = 'text/html',
     array $page_info = []
 ) : void {
-    if($mime_type === 'text/html')
-        if(empty($page_info['html_body'])) $page_info['html_body'] = $body;
+    if ($mime_type === 'text/html')
+        if (empty($page_info['html_body'])) $page_info['html_body'] = $body;
 
     $http_response = array(
         'status' => $status_code,
@@ -107,11 +107,11 @@ function load_vocabulary(
 ) : array {
     $voc = [];
     $lines = explode(chr(10), file_get_contents(__DIR__ . '/../schema/vocabulary.csv'));
-    foreach($lines as $line) {
-        if(!strlen($line)) continue;
+    foreach ($lines as $line) {
+        if (! strlen($line)) continue;
         list($term, $tw) = explode(',', $line);
         $tw = trim($tw);
-        if(strlen($tw)) $voc[$term] = $tw;
+        if (strlen($tw)) $voc[$term] = $tw;
     }
     return $voc;
 }
