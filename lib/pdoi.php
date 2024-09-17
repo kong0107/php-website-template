@@ -17,7 +17,6 @@ class PDOi extends PDO {
         parent::__construct($dsn, $username, $password, $options);
     }
 
-
     /**
      * Execute a query, increase the counter, and log.
      */
@@ -30,11 +29,12 @@ class PDOi extends PDO {
             return parent::query($query);
         }
         catch (PDOException $e) {
-            $errno = $e->getCode();
-            site_log(
-                "Database Error %d: %s\n%s",
-                $e->getCode(), $e->getMessage(), $query
-            );
+            if (function_exists('site_log')) {
+                site_log(
+                    "Database Error %d: %s\n%s",
+                    $e->getCode(), $e->getMessage(), $query
+                );
+            }
         }
         return false;
     }
@@ -48,7 +48,7 @@ class PDOi extends PDO {
     ) : array|false {
         if (count($values)) $sql = sprintf($sql, ...$values);
         $stmt = $this->query($sql);
-        return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : false;
+        return $stmt ? $stmt->fetchAll() : false;
     }
 
     /**
@@ -62,7 +62,7 @@ class PDOi extends PDO {
         $stmt = $this->query($sql);
         if (! $stmt) return false;
         $ret = array();
-        while($v = $stmt->fetchColumn()) $ret[] = $v;
+        while ($v = $stmt->fetchColumn()) $ret[] = $v;
         return $ret;
     }
 
@@ -98,7 +98,6 @@ class PDOi extends PDO {
         array $data
     ) : string|false {
         if (! static::validate($table_name)) return false;
-
         $sql = $this->join_columns(array_keys($data), ', ');
         if (! $sql) return false;
         $sql = "INSERT INTO $table_name SET $sql";
@@ -122,18 +121,16 @@ class PDOi extends PDO {
 
         $stmt = parent::prepare($sql);
         if (! $stmt) return false;
-        if (! $stmt->execute($conditions)) return false;
-        return $stmt->fetchAll();
+        return $stmt->execute($conditions) ? $stmt->fetchAll() : false;
     }
 
     /**
      * Get the first row which meets $conditions from $table_name.
-     * @return array|string|null|false
      */
     public function select_row(
         string $table_name,
         array $conditions
-    ) {
+    ) : array|false {
         if (! static::validate($table_name)) return false;
         $sql = count($conditions) ? $this->join_columns(array_keys($conditions)) : '1';
         if (! $sql) return false;
@@ -141,13 +138,11 @@ class PDOi extends PDO {
 
         $stmt = parent::prepare($sql);
         if (! $stmt) return false;
-        if (! $stmt->execute($conditions)) return false;
-        return $stmt->fetch();
+        return $stmt->execute($conditions) ? $stmt->fetch() : false;
     }
 
     /**
-     * Delete at most one row which meets $conditions in $table_name.
-     * @return bool
+     * Delete rows which meets $conditions in $table_name.
      */
     public function delete(
         string $table_name,
@@ -162,8 +157,40 @@ class PDOi extends PDO {
 
         $stmt = parent::prepare($sql);
         if (! $stmt) return false;
-        if (! $stmt->execute($conditions)) return false;
-        return $this->rowCount;
+        return $stmt->execute($conditions) ? $stmt->rowCount() : false;
+    }
+
+    /**
+     * Update rows.
+     * NOTE: $data and $conditions may have duplicate keys with different values.
+     *       Therefore value binding would be different here.
+     */
+    public function update(
+        string $table_name,
+        array $data,
+        array $conditions
+    ) : int|false {
+        if (! static::validate($table_name)) return false;
+        $sql = "UPDATE $table_name";
+
+        $pieces = [];
+        foreach ($data as $key => $v) {
+            if (! static::validate($key)) return false;
+            $pieces[] = "$key = ?";
+        }
+        $sql .= ' SET ' . implode(', ', $pieces);
+
+        $pieces = [];
+        foreach ($conditions as $key => $v) {
+            if (! static::validate($key)) return false;
+            $pieces[] = "$key = ?";
+        }
+        $sql .= ' WHERE ' . implode(' AND ', $pieces);
+
+        $stmt = parent::prepare($sql);
+        if (! $stmt) return false;
+        $params = array_merge(array_values($data), array_values($conditions));
+        return $stmt->execute($params) ? $stmt->rowCount() : false;
     }
 
     /**
@@ -175,7 +202,6 @@ class PDOi extends PDO {
         array $data
     ) : string|false {
         if (! static::validate($table_name)) return false;
-
         $sql = $this->join_columns(array_keys($data), ', ');
         if (! $sql) return false;
         $sql = "INSERT INTO $table_name SET $sql ON DUPLICATE KEY UPDATE $sql";
