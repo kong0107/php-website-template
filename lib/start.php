@@ -31,20 +31,34 @@ switch (session_status()) {
  * > for every child that opened a persistent connection will have its own open persistent connection to the server.
  * --- https://www.php.net/manual/en/features.persistent-connections.php
  */
-require_once 'database.php';
+// require_once 'database.php';
+// try {
+//     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+//     $db = new mysqlii(
+//         CONFIG['mysqli.hostname'],
+//         CONFIG['mysqli.username'],
+//         CONFIG['mysqli.password'],
+//         CONFIG['mysqli.database'],
+//         CONFIG['mysqli.port']
+//     );
+//     $db->set_charset('utf8mb4');
+//     $db->query(sprintf("SET time_zone = '%s';", date('P')));
+// } catch (mysqli_sql_exception $e) {
+//     site_log('MySQL Error %d: %s', $e->getCode(), $e->getMessage());
+//     http_response_code(500); // 這裡不能用 error_output() ，不然會遞迴。
+//     exit;
+// }
+require_once __DIR__ . '/pdoi.php';
 try {
-    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-    $db = new mysqlii(
-        CONFIG['mysqli.hostname'],
+    $db = new PDOi(
+        'mysql:host=' . CONFIG['mysqli.hostname'] . ';dbname=' . CONFIG['mysqli.database'],
         CONFIG['mysqli.username'],
-        CONFIG['mysqli.password'],
-        CONFIG['mysqli.database'],
-        CONFIG['mysqli.port']
+        CONFIG['mysqli.password']
     );
-    $db->set_charset('utf8mb4');
-    $db->query(sprintf("SET time_zone = '%s';", date('P')));
-} catch (mysqli_sql_exception $e) {
-    site_log('MySQL Error %d: %s', $e->getCode(), $e->getMessage());
+    $db->exec('SET names utf8mb4');
+    $db->exec(sprintf("SET time_zone = '%s';", date('P')));
+} catch (PDOException $e) {
+    site_log('PDO Error %d: %s', $e->getCode(), $e->getMessage());
     http_response_code(500); // 這裡不能用 error_output() ，不然會遞迴。
     exit;
 }
