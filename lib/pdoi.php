@@ -1,19 +1,34 @@
 <?php
 
 class PDOi extends PDO {
+    public static $defaultOptions = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
+        PDO::ATTR_STRINGIFY_FETCHES => false,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ];
 
+    /**
+     * Constructor with different parameter list from parent.
+     * The frist parameter of parent constructor is here explode into two parts:
+     * * $driver: driver name (ex: mysql, pgsql, sqlsrv, sqlite)
+     * * $dsn_kv: string for sqlite, assoc array for other drivers
+     */
     public function __construct(
-        string $dsn,
+        string $driver,
+        /*array|string*/ $dsn_kv,
         ?string $username = null,
         ?string $password = null,
         ?array $options = null
     ) {
-        $options = array_merge([
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
-            PDO::ATTR_STRINGIFY_FETCHES => false,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ], $options ?? []);
+        $dsn = $driver . ':';
+        if (is_string($dsn_kv)) $dsn .= $dsn_kv;
+        else {
+            $pieces = [];
+            foreach ($dsn_kv as $k => $v) $pieces[] = "$k=$v";
+            $dsn .= implode(';', $pieces);
+        }
+        $options = array_merge(self::$defaultOptions, $options ?? []);
         parent::__construct($dsn, $username, $password, $options);
     }
 
@@ -24,7 +39,7 @@ class PDOi extends PDO {
         string $query,
         ?int $fetchMode = PDO::FETCH_ASSOC,
         mixed ...$fetchModeArgs
-    ) : PDOStatement|false {
+    ) /*: PDOStatement|false*/ {
         try {
             return parent::query($query);
         }
@@ -44,8 +59,8 @@ class PDOi extends PDO {
      */
     public function get_all(
         string $sql,
-        mixed ...$values
-    ) : array|false {
+        /*mixed*/ ...$values
+    ) /*: array|false*/ {
         if (count($values)) $sql = sprintf($sql, ...$values);
         $stmt = $this->query($sql);
         return $stmt ? $stmt->fetchAll() : false;
@@ -56,8 +71,8 @@ class PDOi extends PDO {
      */
     public function get_col(
         string $sql,
-        mixed ...$values
-    ) : array|false {
+        /*mixed*/ ...$values
+    ) /*: array|false*/ {
         if (count($values)) $sql = sprintf($sql, ...$values);
         $stmt = $this->query($sql);
         if (! $stmt) return false;
@@ -71,8 +86,8 @@ class PDOi extends PDO {
      */
     public function get_one(
         string $sql,
-        mixed ...$values
-    ) : mixed {
+        /*mixed*/ ...$values
+    ) /*: mixed*/ {
         if (count($values)) $sql = sprintf($sql, ...$values);
         $stmt = $this->query($sql);
         return $stmt ? $stmt->fetchColumn() : false;
@@ -83,8 +98,8 @@ class PDOi extends PDO {
      */
     public function get_row(
         string $sql,
-        mixed ...$values
-    ) : array|false {
+        /*mixed*/ ...$values
+    ) /*: array|false*/ {
         if (count($values)) $sql = sprintf($sql, ...$values);
         $stmt = $this->query($sql);
         return $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
@@ -96,7 +111,7 @@ class PDOi extends PDO {
     public function insert(
         string $table_name,
         array $data
-    ) : string|false {
+    ) /*: string|false*/ {
         if (! static::validate($table_name)) return false;
         $sql = $this->join_columns(array_keys($data), ', ');
         if (! $sql) return false;
@@ -113,7 +128,7 @@ class PDOi extends PDO {
     public function select_all(
         string $table_name,
         array $conditions = []
-    ) : array|false {
+    ) /*: array|false*/ {
         if (! static::validate($table_name)) return false;
         $sql = count($conditions) ? $this->join_columns(array_keys($conditions)) : '1';
         if (! $sql) return false;
@@ -130,7 +145,7 @@ class PDOi extends PDO {
     public function select_row(
         string $table_name,
         array $conditions
-    ) : array|false {
+    ) /*: array|false*/ {
         if (! static::validate($table_name)) return false;
         $sql = count($conditions) ? $this->join_columns(array_keys($conditions)) : '1';
         if (! $sql) return false;
@@ -148,7 +163,7 @@ class PDOi extends PDO {
         string $table_name,
         array $conditions,
         ?int $limit = 1
-    ) : int|false {
+    ) /*: int|false*/ {
         if (! static::validate($table_name)) return false;
         $sql = count($conditions) ? $this->join_columns(array_keys($conditions)) : '1';
         if (! $sql) return false;
@@ -169,7 +184,7 @@ class PDOi extends PDO {
         string $table_name,
         array $data,
         array $conditions
-    ) : int|false {
+    ) /*: int|false*/ {
         if (! static::validate($table_name)) return false;
         $sql = "UPDATE $table_name";
 
@@ -200,7 +215,7 @@ class PDOi extends PDO {
     public function replace(
         string $table_name,
         array $data
-    ) : string|false {
+    ) /*: string|false*/ {
         if (! static::validate($table_name)) return false;
         $sql = $this->join_columns(array_keys($data), ', ');
         if (! $sql) return false;
@@ -211,16 +226,16 @@ class PDOi extends PDO {
         return $stmt->execute($data) ? $this->lastInsertId : false;
     }
 
-    static public function validate(
+    public static function validate(
         string $str
     ) : bool {
         return preg_match('/^[A-Za-z_]\w*+$/', $str) ? true : false;
     }
 
-    static public function join_columns(
+    public static function join_columns(
         array $columns,
         string $glue = ' AND '
-    ) : string|false {
+    ) /*: string|false*/ {
         $pieces = [];
         foreach ($columns as $col) {
             if (! static::validate($col)) return false;

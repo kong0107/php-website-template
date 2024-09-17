@@ -51,11 +51,15 @@ switch (session_status()) {
 require_once __DIR__ . '/pdoi.php';
 try {
     $db = new PDOi(
-        'mysql:host=' . CONFIG['mysqli.hostname'] . ';dbname=' . CONFIG['mysqli.database'],
+        'mysql',
+        [
+            'host' => CONFIG['mysqli.hostname'],
+            'dbname' => CONFIG['mysqli.database'],
+            'charset' => 'utf8mb4'
+        ],
         CONFIG['mysqli.username'],
         CONFIG['mysqli.password']
     );
-    $db->exec('SET names utf8mb4');
     $db->exec(sprintf("SET time_zone = '%s';", date('P')));
 } catch (PDOException $e) {
     site_log('PDO Error %d: %s', $e->getCode(), $e->getMessage());

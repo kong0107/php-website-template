@@ -72,7 +72,7 @@ function http_get(
  */
 function http_post(
     string $url,
-    array|string $content = NULL,
+    /*array|string*/ $content = NULL,
     array $header = array()
 ) : array {
     if (is_array($content)) {
@@ -107,7 +107,7 @@ function http_post(
 
 function http_post_json(
     string $url,
-    array|string $json,
+    /*array|string*/ $json,
     array $header = array()
 ) {
     $header[] = 'Content-Type: application/json; charset=utf-8';
