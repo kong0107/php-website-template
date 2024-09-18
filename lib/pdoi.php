@@ -33,15 +33,39 @@ class PDOi extends PDO {
     }
 
     /**
-     * Execute a query, increase the counter, and log.
+     * Execute a query, with or without paremeters or values.
+     *
+     * @example
+     * query('SELECT 1 + 2');
+     *
+     * @example
+     * query('SELECT ? + ?', [1, 2]);
+     *
+     * @example
+     * query('SELECT :a + :b', ['a' => 1, 'b' => 2]);
+     *
+     * @example
+     * query('SELECT %d + %d', 1, 2);
+     *
      */
+    #[\ReturnTypeWillChange]
     public function query(
         string $query,
-        ?int $fetchMode = PDO::FETCH_ASSOC,
-        mixed ...$fetchModeArgs
+        mixed ...$values
     ) /*: PDOStatement|false*/ {
         try {
-            return parent::query($query);
+            if (! count($values)) {
+                $stmt = parent::query($query);
+            }
+            else if (is_array($values[0])) {
+                $stmt = parent::prepare($query);
+                $stmt->execute($values[0]);
+            }
+            else {
+                $query = sprintf($query, ...$values);
+                $stmt = parent::query($query);
+            }
+            return $stmt;
         }
         catch (PDOException $e) {
             if (function_exists('site_log')) {
@@ -49,6 +73,7 @@ class PDOi extends PDO {
                     "Database Error %d: %s\n%s",
                     $e->getCode(), $e->getMessage(), $query
                 );
+                if (count($values) && is_array($values[0])) site_log($values[0]);
             }
         }
         return false;
@@ -120,6 +145,39 @@ class PDOi extends PDO {
         $stmt = parent::prepare($sql);
         if (! $stmt) return false;
         return $stmt->execute($data) ? $this->lastInsertId : false;
+    }
+
+    /**
+     * Insert multiple rows from a 2d array, which is a list with assoc array as elements.
+     */
+    public function insert_multi(
+        string $table_name,
+        array $rows
+    ) /*: int|false*/ {
+        if (! static::validate($table_name)) return false;
+        $cols = [];
+        foreach ($rows as $row)
+            $cols = array_merge($cols, array_diff(array_keys($row), $cols));
+        foreach ($cols as $col) if (! static::validate($col)) return false;
+
+        $sql = sprintf(
+            'INSERT INTO %s (%s) VALUES ',
+            $table_name,
+            implode(', ', $cols)
+        );
+        $placeholder = '(?' . str_repeat(', ?', count($cols)) . ')';
+        $sql .= str_repeat("\n$placeholder,") . "\n$placeholder";
+
+        $stmt = parent::prepare($sql);
+        if (! $stmt) return false;
+
+        $values = [];
+        foreach ($rows as $row) {
+            foreach ($cols as $col) {
+                $values[] = $row[$col] ?? null;
+            }
+        }
+        return $stmt->execute($values) ? $stmt->rowCount() : false;
     }
 
     /**
