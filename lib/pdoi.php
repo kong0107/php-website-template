@@ -165,8 +165,8 @@ class PDOi extends PDO {
             $table_name,
             implode(', ', $cols)
         );
-        $placeholder = '(?' . str_repeat(', ?', count($cols)) . ')';
-        $sql .= str_repeat("\n$placeholder,") . "\n$placeholder";
+        $placeholder = '(?' . str_repeat(', ?', count($cols) - 1) . ')';
+        $sql .= str_repeat("\n$placeholder,", count($rows) - 1) . "\n$placeholder";
 
         $stmt = parent::prepare($sql);
         if (! $stmt) return false;
