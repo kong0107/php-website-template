@@ -144,7 +144,7 @@ class PDOi extends PDO {
 
         $stmt = parent::prepare($sql);
         if (! $stmt) return false;
-        return $stmt->execute($data) ? $this->lastInsertId : false;
+        return $stmt->execute($data) ? parent::lastInsertId() : false;
     }
 
     /**
@@ -171,13 +171,14 @@ class PDOi extends PDO {
         $stmt = parent::prepare($sql);
         if (! $stmt) return false;
 
-        $values = [];
+        $i = 1;
         foreach ($rows as $row) {
             foreach ($cols as $col) {
-                $values[] = $row[$col] ?? null;
+                if (isset($row[$col])) $stmt->bindValue($i++, $row[$col]);
+                else $stmt->bindValue($i++, null, PDO::PARAM_NULL);
             }
         }
-        return $stmt->execute($values) ? $stmt->rowCount() : false;
+        return $stmt->execute() ? $stmt->rowCount() : false;
     }
 
     /**
@@ -264,24 +265,6 @@ class PDOi extends PDO {
         if (! $stmt) return false;
         $params = array_merge(array_values($data), array_values($conditions));
         return $stmt->execute($params) ? $stmt->rowCount() : false;
-    }
-
-    /**
-     * Try to insert $data as a new row into $table_name, or update if having corresponding unique keys.
-     * NOTE: This is NOT the actual REPLACE syntax, which first deletes the row if conflicted.
-     */
-    public function replace(
-        string $table_name,
-        array $data
-    ) /*: string|false*/ {
-        if (! static::validate($table_name)) return false;
-        $sql = $this->join_columns(array_keys($data), ', ');
-        if (! $sql) return false;
-        $sql = "INSERT INTO $table_name SET $sql ON DUPLICATE KEY UPDATE $sql";
-
-        $stmt = parent::prepare($sql);
-        if (! $stmt) return false;
-        return $stmt->execute($data) ? $this->lastInsertId : false;
     }
 
     public static function validate(
