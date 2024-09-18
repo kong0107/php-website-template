@@ -86,20 +86,18 @@ class PDOi extends PDO {
         string $sql,
         /*mixed*/ ...$values
     ) /*: array|false*/ {
-        if (count($values)) $sql = sprintf($sql, ...$values);
-        $stmt = $this->query($sql);
+        $stmt = $this->query($sql, ...$values);
         return $stmt ? $stmt->fetchAll() : false;
     }
 
     /**
-     * Get all values of the first column of each rows of the query result.
+     * Get all values of the first column of each rows.
      */
     public function get_col(
         string $sql,
         /*mixed*/ ...$values
     ) /*: array|false*/ {
-        if (count($values)) $sql = sprintf($sql, ...$values);
-        $stmt = $this->query($sql);
+        $stmt = $this->query($sql, ...$values);
         if (! $stmt) return false;
         $ret = array();
         while ($v = $stmt->fetchColumn()) $ret[] = $v;
@@ -107,31 +105,31 @@ class PDOi extends PDO {
     }
 
     /**
-     * Get the value of the first column of the first row of the query result.
+     * Get the value of the first column of the first row.
      */
     public function get_one(
         string $sql,
         /*mixed*/ ...$values
     ) /*: mixed*/ {
-        if (count($values)) $sql = sprintf($sql, ...$values);
-        $stmt = $this->query($sql);
+        $stmt = $this->query($sql, ...$values);
         return $stmt ? $stmt->fetchColumn() : false;
     }
 
     /**
-     * Get the first row as an associative array.
+     * Get the first row.
      */
     public function get_row(
         string $sql,
         /*mixed*/ ...$values
     ) /*: array|false*/ {
-        if (count($values)) $sql = sprintf($sql, ...$values);
-        $stmt = $this->query($sql);
-        return $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
+        $stmt = $this->query($sql, ...$values);
+        return $stmt ? $stmt->fetch() : false;
     }
 
     /**
      * Insert the associative array $data as a new row into $table_name and returns the inserted ID.
+     * NOTE: Return type is always string, even with ATTR_STRINGIFY_FETCHES set to false and the column has type integer.
+     *       If id column is not AUTO_INCREMENT, the return value is string '0', which evaluates to false.
      */
     public function insert(
         string $table_name,
