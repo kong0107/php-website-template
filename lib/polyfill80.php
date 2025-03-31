@@ -2,16 +2,28 @@
 /**
  * Polyfill to use functions new in PHP 8.0
  *
+ * Following new features in PHP 8.0 are NOT implemented:
+ * * class Attribute
+ * * class PhpToken
+ * * class UnhandledMatchError
+ * * class ValueError
+ * * interfaces DOMParentNode, DOMChildNode
+ *
  * @see https://www.php.net/releases/8.0/
  */
 if (PHP_VERSION_ID < 80000) {
+
+if (! defined('FILTER_VALIDATE_BOOL')) {
+	define('FILTER_VALIDATE_BOOL', FILTER_VALIDATE_BOOLEAN);
+}
+
 
 if (! interface_exists('Stringable', false)) {
 interface Stringable {
 	/**
 	 * @return string
 	 */
-	public function __toString();
+	function __toString();
 }
 } // interface Stringable
 
