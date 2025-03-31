@@ -1,285 +1,474 @@
 <?php
 
-class PDOi extends PDO {
-    public static $defaultOptions = [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
-        PDO::ATTR_STRINGIFY_FETCHES => false,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ];
+/**
+ * @package PDOi
+ */
 
-    /**
-     * Constructor with different parameter list from parent.
-     * The frist parameter of parent constructor is here explode into two parts:
-     * * $driver: driver name (ex: mysql, pgsql, sqlsrv, sqlite)
-     * * $dsn_kv: string for sqlite, assoc array for other drivers
-     */
-    public function __construct(
-        string $driver,
-        /*array|string*/ $dsn_kv,
-        ?string $username = null,
-        ?string $password = null,
-        ?array $options = null
-    ) {
-        $dsn = $driver . ':';
-        if (is_string($dsn_kv)) $dsn .= $dsn_kv;
-        else {
-            $pieces = [];
-            foreach ($dsn_kv as $k => $v) $pieces[] = "$k=$v";
-            $dsn .= implode(';', $pieces);
-        }
-        $options = array_merge(self::$defaultOptions, $options ?? []);
-        parent::__construct($dsn, $username, $password, $options);
-    }
+class PDOi {
+	public static $defaultOptions = array(
+		PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+		PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
+		PDO::ATTR_STRINGIFY_FETCHES => false,
+		PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+	);
 
-    /**
-     * Execute a query, with or without paremeters or values.
-     *
-     * @example
-     * query('SELECT 1 + 2');
-     *
-     * @example
-     * query('SELECT ? + ?', [1, 2]);
-     *
-     * @example
-     * query('SELECT :a + :b', ['a' => 1, 'b' => 2]);
-     *
-     * @example
-     * query('SELECT %d + %d', 1, 2);
-     *
-     */
-    #[\ReturnTypeWillChange]
-    public function query(
-        string $query,
-        mixed ...$values
-    ) /*: PDOStatement|false*/ {
-        try {
-            if (! count($values)) {
-                $stmt = parent::query($query);
-            }
-            else if (is_array($values[0])) {
-                $stmt = parent::prepare($query);
-                $stmt->execute($values[0]);
-            }
-            else {
-                $query = sprintf($query, ...$values);
-                $stmt = parent::query($query);
-            }
-            return $stmt;
-        }
-        catch (PDOException $e) {
-            if (function_exists('site_log')) {
-                site_log(
-                    "Database Error %d: %s\n%s",
-                    $e->getCode(), $e->getMessage(), $query
-                );
-                if (count($values) && is_array($values[0])) site_log($values[0]);
-            }
-        }
-        return false;
-    }
+	public const PARAMS = array(
+		PDO::PARAM_BOOL => 'bool',
+		PDO::PARAM_NULL => 'null',
+		PDO::PARAM_INT => 'int',
+		PDO::PARAM_STR => 'str',
+		PDO::PARAM_STR_NATL => 'str_natl',
+		PDO::PARAM_STR_CHAR => 'str_char',
+		PDO::PARAM_LOB => 'lob',
+		PDO::PARAM_STMT => 'stmt',
+		PDO::PARAM_INPUT_OUTPUT => 'input_output'
+	); // https://www.php.net/manual/zh/pdo.constants.php
 
-    /**
-     * Get all result rows as a two-dimensional array.
-     */
-    public function get_all(
-        string $sql,
-        /*mixed*/ ...$values
-    ) /*: array|false*/ {
-        $stmt = $this->query($sql, ...$values);
-        return $stmt ? $stmt->fetchAll() : false;
-    }
+	private PDO $db;
 
-    /**
-     * Get all values of the first column of each rows.
-     */
-    public function get_col(
-        string $sql,
-        /*mixed*/ ...$values
-    ) /*: array|false*/ {
-        $stmt = $this->query($sql, ...$values);
-        if (! $stmt) return false;
-        $ret = array();
-        while ($v = $stmt->fetchColumn()) $ret[] = $v;
-        return $ret;
-    }
+	/** @var callable(mixed): mixed */
+	private $logger = null;
 
-    /**
-     * Get the value of the first column of the first row.
-     */
-    public function get_one(
-        string $sql,
-        /*mixed*/ ...$values
-    ) /*: mixed*/ {
-        $stmt = $this->query($sql, ...$values);
-        return $stmt ? $stmt->fetchColumn() : false;
-    }
+	/**
+	 * Constructor with different parameter list from parent.
+	 *
+	 * @param string $driver driver name (ex: mysql, pgsql, sqlsrv, sqlite)
+	 * @param array|string $dsn_kv string for sqlite, assoc array for other drivers
+	 * @param string|null $username
+	 * @param string|null $password
+	 * @param array<int, mixed>|null $options
+	 *
+	 * @throws PDOException
+	 */
+	public function __construct(
+		$driver,
+		$dsn_kv,
+		$username = null,
+		$password = null,
+		$options = null
+	) {
+		$dsn = $driver . ':';
+		if (is_string($dsn_kv)) $dsn .= $dsn_kv;
+		else {
+			$pieces = [];
+			foreach ($dsn_kv as $k => $v) $pieces[] = "$k=$v";
+			$dsn .= implode(';', $pieces);
+		}
+		$options = array_replace(self::$defaultOptions, $options ?? array());
+		$this->db = new PDO($dsn, $username, $password, $options);
+	}
 
-    /**
-     * Get the first row.
-     */
-    public function get_row(
-        string $sql,
-        /*mixed*/ ...$values
-    ) /*: array|false*/ {
-        $stmt = $this->query($sql, ...$values);
-        return $stmt ? $stmt->fetch() : false;
-    }
+	/**
+	 * @param callable $callback
+	 * @return void
+	 */
+	public function set_logger($callback) {
+		$this->logger = $callback;
+	}
 
-    /**
-     * Insert the associative array $data as a new row into $table_name and returns the inserted ID.
-     * NOTE: Return type is always string, even with ATTR_STRINGIFY_FETCHES set to false and the column has type integer.
-     *       If id column is not AUTO_INCREMENT, the return value is string '0', which evaluates to false.
-     */
-    public function insert(
-        string $table_name,
-        array $data
-    ) /*: string|false*/ {
-        if (! static::validate($table_name)) return false;
-        $sql = $this->join_columns(array_keys($data), ', ');
-        if (! $sql) return false;
-        $sql = "INSERT INTO $table_name SET $sql";
+	/**
+	 * @param mixed $any
+	 * @return mixed
+	 */
+	private function log($any) {
+		if (! $this->logger) return null;
+		return call_user_func($this->logger, $any);
+	}
 
-        $stmt = parent::prepare($sql);
-        if (! $stmt) return false;
-        return $stmt->execute($data) ? parent::lastInsertId() : false;
-    }
+	/**
+	 * @param string $statement
+	 * @return int|false
+	 */
+	public function exec($statement) {
+		$this->log($statement);
+		return $this->db->exec($statement);
+	}
 
-    /**
-     * Insert multiple rows from a 2d array, which is a list with assoc array as elements.
-     */
-    public function insert_multi(
-        string $table_name,
-        array $rows
-    ) /*: int|false*/ {
-        if (! static::validate($table_name)) return false;
-        $cols = [];
-        foreach ($rows as $row)
-            $cols = array_merge($cols, array_diff(array_keys($row), $cols));
-        foreach ($cols as $col) if (! static::validate($col)) return false;
+	/**
+	 * Execute a query, with or without paremeters or values.
+	 *
+	 * @param string $query
+	 * @param mixed|array<string, mixed>|array{0: string, 1: mixed, 2?: int|string}[]|null $values
+	 * @return PDOStatement|false
+	 *
+	 * @example
+	 * query('SELECT 1 + 2');
+	 *
+	 * @example
+	 * query('SELECT ? + ?', [1, 2]);
+	 *
+	 * @example
+	 * query('SELECT :a + :b', ['a' => 1, 'b' => 2]);
+	 *
+	 * @example
+	 * query('SELECT :a + :b', [
+	 *	  ['a', 1, 'int'],
+	 *	  ['b', 2, PDO::PARAM_INT]
+	 * ]);
+	 *
+	 */
+	public function query($query, $values = null) {
+		$this->log($query);
+		if (is_null($values) || ! count($values)) return $this->db->query($query);
 
-        $sql = sprintf(
-            'INSERT INTO %s (%s) VALUES ',
-            $table_name,
-            implode(', ', $cols)
-        );
-        $placeholder = '(?' . str_repeat(', ?', count($cols) - 1) . ')';
-        $sql .= str_repeat("\n$placeholder,", count($rows) - 1) . "\n$placeholder";
+		$this->log($values);
+		$stmt = $this->db->prepare($query);
 
-        $stmt = parent::prepare($sql);
-        if (! $stmt) return false;
+		if (array_is_list($values) && is_array($values[0])) {
+			static::bindStatementValues($stmt, $values);
+			$stmt->execute();
+		}
+		else $stmt->execute($values);
+		return $stmt;
+	}
 
-        $i = 1;
-        foreach ($rows as $row) {
-            foreach ($cols as $col) {
-                if (isset($row[$col])) $stmt->bindValue($i++, $row[$col]);
-                else $stmt->bindValue($i++, null, PDO::PARAM_NULL);
-            }
-        }
-        return $stmt->execute() ? $stmt->rowCount() : false;
-    }
+	/**
+	 * Get all result rows as a two-dimensional array.
+	 * @param string $sql
+	 * @param array|null $values
+	 * @return array<int, array<string, mixed>>|false
+	 */
+	public function get_all($sql, $values = null) {
+		$stmt = $this->query($sql, $values);
+		return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : false;
+	}
 
-    /**
-     * Get all rows which meets $conditions from $table_name.
-     */
-    public function select_all(
-        string $table_name,
-        array $conditions = []
-    ) /*: array|false*/ {
-        if (! static::validate($table_name)) return false;
-        $sql = count($conditions) ? $this->join_columns(array_keys($conditions)) : '1';
-        if (! $sql) return false;
-        $sql = "SELECT * FROM $table_name WHERE $sql";
+	/**
+	 * @param string $sql
+	 * @param array|null $values
+	 * @return array<array<string, mixed>>|false
+	 */
+	public function get_all_assoc($sql, $values = null) {
+		$stmt = $this->query($sql, $values);
+		return $stmt ? $stmt->fetchAll(PDO::FETCH_UNIQUE | PDO::FETCH_ASSOC) : false;
+	}
 
-        $stmt = parent::prepare($sql);
-        if (! $stmt) return false;
-        return $stmt->execute($conditions) ? $stmt->fetchAll() : false;
-    }
+	/**
+	 * Get all values of the first column of each rows of the query result.
+	 * @param string $sql
+	 * @param array|null $values
+	 * @return mixed[]|false
+	 */
+	public function get_col($sql, $values = null) {
+		$stmt = $this->query($sql, $values);
+		return $stmt ? $stmt->fetchAll(PDO::FETCH_COLUMN, 0) : false;
+	}
 
-    /**
-     * Get the first row which meets $conditions from $table_name.
-     */
-    public function select_row(
-        string $table_name,
-        array $conditions
-    ) /*: array|false*/ {
-        if (! static::validate($table_name)) return false;
-        $sql = count($conditions) ? $this->join_columns(array_keys($conditions)) : '1';
-        if (! $sql) return false;
-        $sql = "SELECT * FROM $table_name WHERE $sql LIMIT 1";
+	/**
+	 * Get the value of the first column of the first row of the query result.
+	 * @param string $sql
+	 * @param array|null $values
+	 * @return mixed
+	 */
+	public function get_one($sql, $values = null) {
+		$stmt = $this->query($sql, $values);
+		return $stmt ? $stmt->fetchColumn() : false;
+	}
 
-        $stmt = parent::prepare($sql);
-        if (! $stmt) return false;
-        return $stmt->execute($conditions) ? $stmt->fetch() : false;
-    }
+	/**
+	 * Get the first row as an associative array.
+	 * @param string $sql
+	 * @param array|null $values
+	 * @return mixed[]|false
+	 */
+	public function get_row($sql, $values = null) {
+		$stmt = $this->query($sql, $values);
+		return $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
+	}
 
-    /**
-     * Delete rows which meets $conditions in $table_name.
-     */
-    public function delete(
-        string $table_name,
-        array $conditions,
-        ?int $limit = 1
-    ) /*: int|false*/ {
-        if (! static::validate($table_name)) return false;
-        $sql = count($conditions) ? $this->join_columns(array_keys($conditions)) : '1';
-        if (! $sql) return false;
-        $sql = "DELETE FROM $table_name WHERE $sql";
-        if ($limit > 0) $sql .= " LIMIT $limit";
+	/**
+	 * Insert the associative array $data as a new row into $table_name and returns the inserted ID.
+	 * @param string $table_name
+	 * @param array $row See query()
+	 * @return string|false
+	 */
+	public function insert($table_name, $row) {
+		static::assert_valid_identifier($table_name);
+		if (array_is_list($row))
+			$sql = static::join_columns(
+				array_map(function ($a) { return $a[0]; }, $row),
+				', '
+			);
+			// $sql = static::join_columns(array_map(fn ($a) => $a[0], $row), ', ');
+		else $sql = static::join_columns(array_keys($row), ', ');
 
-        $stmt = parent::prepare($sql);
-        if (! $stmt) return false;
-        return $stmt->execute($conditions) ? $stmt->rowCount() : false;
-    }
+		$sql = "INSERT INTO $table_name SET $sql";
+		return $this->query($sql, $row) ? $this->db->lastInsertId() : false;
+	}
 
-    /**
-     * Update rows.
-     * NOTE: $data and $conditions may have duplicate keys with different values.
-     *       Therefore value binding would be different here.
-     */
-    public function update(
-        string $table_name,
-        array $data,
-        array $conditions
-    ) /*: int|false*/ {
-        if (! static::validate($table_name)) return false;
-        $sql = "UPDATE $table_name";
+	/**
+	 * Insert multiple rows from a 2d array.
+	 * @param string $table_name
+	 * @param array[] $rows A list of:
+	 * 		1. assoc arrays as elements.
+	 * 		2. list arrays as argument list for `PDOStatement::bind*()`
+	 * @return int|false
+	 */
+	public function insert_multi($table_name, $rows) {
+		static::assert_valid_identifier($table_name);
+		$sql = "INSERT INTO $table_name (%s) VALUES";
+		$all_values = array();
 
-        $pieces = [];
-        foreach ($data as $key => $v) {
-            if (! static::validate($key)) return false;
-            $pieces[] = "$key = ?";
-        }
-        $sql .= ' SET ' . implode(', ', $pieces);
+		if (array_is_list($rows[0])) {
+			$cols = array_unique(array_merge(
+				...array_map(
+					function ($row) {
+						return array_map(function ($fieldInfo) {
+							return $fieldInfo[0];
+						}, $row);
+					},
+					// fn ($row) => array_map(fn ($fieldInfo) => $fieldInfo[0], $row),
+					$rows
+				)
+			));
+			foreach ($cols as $col) static::assert_valid_identifier($col);
+			$sql = sprintf($sql, implode(', ', $cols));
 
-        $pieces = [];
-        foreach ($conditions as $key => $v) {
-            if (! static::validate($key)) return false;
-            $pieces[] = "$key = ?";
-        }
-        $sql .= ' WHERE ' . implode(' AND ', $pieces);
+			foreach ($rows as $i => $row) {
+				$fields = array();
+				foreach ($cols as $col) {
+					$args = array_find($row,
+						function ($args) use ($col) {
+							return $args[0] === $col;
+						}
+					);
+					if (is_array($args)) {
+						array_shift($args);
+						$all_values[] = $args;
+					}
+					else $fields[] = 'null';
+				}
+				if ($i) $sql .= ',';
+				$sql .= "\n(" . implode(', ', $fields) . ')';
+			}
 
-        $stmt = parent::prepare($sql);
-        if (! $stmt) return false;
-        $params = array_merge(array_values($data), array_values($conditions));
-        return $stmt->execute($params) ? $stmt->rowCount() : false;
-    }
+			$this->log($sql);
+			$stmt = $this->db->prepare($sql);
+			if (! $stmt) return false;
 
-    public static function validate(
-        string $str
-    ) : bool {
-        return preg_match('/^[A-Za-z_]\w*+$/', $str) ? true : false;
-    }
+			$this->log($all_values);
+			foreach ($all_values as $i => $args)
+				$stmt->bindValue($i + 1, ...$args);
+			$success = $stmt->execute();
+		}
+		else {
+			$cols = array_unique(array_merge(
+				...array_map(
+					// fn ($row) => array_keys($row),
+					function ($row) { return array_keys($row); },
+					$rows
+				)
+			));
+			foreach ($cols as $col) static::assert_valid_identifier($col);
+			$sql = sprintf($sql, implode(', ', $cols));
+			foreach ($rows as $i => $row) {
+				$fields = array();
+				foreach ($cols as $col) {
+					if (isset($row[$col])) {
+						$fields[] = '?';
+						$all_values[] = $row[$col];
+					}
+					else $fields[] = 'null';
+				}
+				if ($i) $sql .= ',';
+				$sql .= "\n(" . implode(', ', $fields) . ')';
+			}
+			$this->log($sql);
+			$stmt = $this->db->prepare($sql);
+			if (! $stmt) return false;
+			$this->log($all_values);
+			$success = $stmt->execute($all_values);
+		}
 
-    public static function join_columns(
-        array $columns,
-        string $glue = ' AND '
-    ) /*: string|false*/ {
-        $pieces = [];
-        foreach ($columns as $col) {
-            if (! static::validate($col)) return false;
-            $pieces[] = "$col = :$col";
-        }
-        return implode($glue, $pieces);
+		if (! $success) return false;
+		$this->log($row_count = $stmt->rowCount());
+		return $row_count;
+	}
+
+	/**
+	 * Get all rows which meets $conditions from $table_name.
+	 * @param string $table_name
+	 * @param array $conditions See query()
+	 * @param string $order_by SQL closure for ORDER BY
+	 * @return array[]|false
+	 */
+	public function select_all($table_name, $conditions = array(), $order_by = '') {
+		static::assert_valid_identifier($table_name);
+		$sql = "SELECT * FROM $table_name" . static::make_where($conditions);
+		if ($order_by) $sql .= " ORDER BY $order_by"; /// todo: prevent sql injection
+		return $this->get_all($sql, $conditions);
+	}
+
+	/**
+	 * Get the first row which meets $conditions from $table_name.
+	 * @param string $table_name
+	 * @param array $conditions See query()
+	 * @return array|false
+	 */
+	public function select_row($table_name, $conditions) {
+		static::assert_valid_identifier($table_name);
+		$sql = "SELECT * FROM $table_name"
+			. static::make_where($conditions)
+			. ' LIMIT 1'
+		;
+		return $this->get_row($sql, $conditions);
+	}
+
+	/**
+	 * Delete rows which meets $conditions in $table_name.
+	 * @param string $table_name
+	 * @param array $conditions See query()
+	 * @param int $limit
+	 * @return int|false
+	 */
+	public function delete($table_name, $conditions, $limit = -1) {
+		static::assert_valid_identifier($table_name);
+		$sql = "DELETE FROM $table_name" . static::make_where($conditions);
+		if ($limit >= 0) $sql .= " LIMIT $limit";
+		$stmt = $this->query($sql, $conditions);
+		if (! $stmt) return false;
+		$this->log($row_count = $stmt->rowCount());
+		return $row_count;
+	}
+
+	/**
+	 * Update rows.
+	 *
+	 * NOTE: $data and $conditions may have duplicate keys with different values.
+	 *	   Therefore value binding would be different here.
+	 *
+	 * @param string $table_name
+	 * @param array $data See query()
+	 * @param array $conditions See query()
+	 * @param int $limit
+	 * @return int|false
+	 */
+	public function update($table_name, $data, $conditions, $limit = -1) {
+		static::assert_valid_identifier($table_name);
+		$sql = "UPDATE $table_name";
+		$all_values = array();
+		$i = 0;
+
+		$sql_set = '';
+		if (array_is_list($data)) {
+			foreach ($data as $fieldInfo) {
+				$col = array_shift($fieldInfo);
+				if ($sql_set) $sql_set .= ', ';
+				$sql_set .= "$col = ?";
+				$all_values[] = array(++$i, ...$fieldInfo);
+			}
+		}
+		else {
+			foreach ($data as $col => $value) {
+				if ($sql_set) $sql_set .= ', ';
+				$sql_set .= "$col = ?";
+				$all_values[] = array(++$i, $value);
+			}
+		}
+		$sql .= " SET $sql_set";
+
+		$sql_where = '';
+		if (array_is_list($conditions)) {
+			foreach ($conditions as $fieldInfo) {
+				$col = array_shift($fieldInfo);
+				if ($sql_where) $sql_where .= ' AND ';
+				$sql_where .= "$col = ?";
+				$all_values[] = array(++$i, ...$fieldInfo);
+			}
+		}
+		else {
+			foreach ($conditions as $col => $value) {
+				if ($sql_where) $sql_where .= ' AND ';
+				$sql_where .= "$col = ?";
+				$all_values[] = array(++$i, $value);
+			}
+		}
+		$sql .= " WHERE $sql_where";
+		if ($limit >= 0) $sql .= " LIMIT $limit";
+
+		$stmt = $this->query($sql, $all_values);
+		if (! $stmt) return false;
+		$this->log($row_count = $stmt->rowCount());
+		return $row_count;
+	}
+
+	/**
+	 * @param string $str
+	 * @return bool
+	 */
+	public static function validate($str) {
+		return preg_match('/^[A-Za-z_]\w*+$/', $str) ? true : false;
+	}
+
+	/**
+	 * @param string $identifier
+	 * @param string $exception_message_format
+	 * @return true
+	 * @throws InvalidArgumentException
+	 */
+	public static function assert_valid_identifier(
+		$identifier,
+		$exception_message_format = "invalid character in identifier: %s"
+	) {
+		if (static::validate($identifier)) return true;
+		throw new InvalidArgumentException(sprintf($exception_message_format, $identifier));
+	}
+
+	/**
+	 * @param array $columns
+	 * @param string $glue
+	 * @return string
+	 */
+	public static function join_columns($columns, $glue = ' AND ') {
+		$pieces = [];
+		foreach ($columns as $col) {
+			static::assert_valid_identifier($col);
+			$pieces[] = "$col = :$col";
+		}
+		return implode($glue, $pieces);
+	}
+
+	/**
+	 * @param PDOStatement &$stat
+	 * @param array{0: string, 1: mixed, 2?: int|string}[] $params
+	 * @return int
+	 */
+	public static function bindStatementValues(&$stat, $params) {
+		foreach ($params as $args) {
+			if (count($args) > 2 && gettype($args[2]) === 'string') {
+				$type = array_search($args[2], self::PARAMS);
+				if ($type === false) $type = PDO::PARAM_STR;
+				$args[2] = $type;
+			}
+			$stat->bindValue(...$args);
+			// https://www.php.net/manual/zh/pdostatement.bindparam.php
+		}
+		return count($params);
+	}
+
+	/**
+	 * @param array $conditions See query()
+	 * @return string
+	 */
+	public static function make_where($conditions) {
+		if (count($conditions)) {
+			$cols = array_is_list($conditions)
+				// ? array_map(fn ($args) => $args[0], $conditions)
+				? array_map(function ($args) { return $args[0]; }, $conditions)
+				: array_keys($conditions)
+			;
+			return ' WHERE ' . static::join_columns($cols);
+		}
+		return '';
+	}
+}
+
+if (! function_exists('array_is_list')) {
+    function array_is_list($array) {
+		$count = count($array);
+		for ($i = 0; $i < $count; ++$i) {
+			if (! array_key_exists($i, $array)) return false;
+		}
+		return true;
     }
 }
