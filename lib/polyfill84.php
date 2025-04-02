@@ -140,6 +140,17 @@ function bcround($num, $precision = 0, $mode = RoundingMode::HalfAwayFromZero) {
 	if (! preg_match('/^[+-]?[0-9]*(\.[0-9]*)?$/', $num, $matches))
 		throw new ValueError;
 
+
+
+}
+}
+
+
+if (! function_exists('fpow')) {
+function fpow($num, $exponent) {
+	if ($num === 0 && $exponent < 0) return INF;
+	if ($num < 0 && fmod($exponent, 1)) return NAN;
+	return $num ** $exponent;
 }
 }
 
