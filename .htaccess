@@ -1,40 +1,27 @@
-Require all granted
 DirectoryIndex index.php index.html
+Options FollowSymLinks
 
 <IfModule rewrite_module>
-    # 必要設定
-    Options FollowSymLinks
-    RewriteEngine On
+	RewriteEngine On
 
-    # 強制 HTTPS
-    RewriteCond %{HTTPS} off
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,QSA,L]
+	# 強制 HTTPS ，除了 /.well-knwon/acme-challenge/
+	RewriteRule ^\.well-known/ - [END]
+	RewriteCond %{HTTPS} off
+	RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,QSA,L]
 
-    # 允許爬蟲
-    RewriteRule ^robots\.txt$ - [L]
+	# 禁止連向隱藏目錄、隱藏檔、設定檔
+	RewriteRule ^\. - [R=404,L] # 根目錄的隱藏檔/目錄
+	RewriteRule /\. - [R=404,L] # 子目錄裡的隱藏檔/目錄
 
-    # 禁止連向隱藏目錄或隱藏檔
-    RewriteRule ^\. error.php?status=404 [QSA,L]
-    RewriteRule /\. error.php?status=404 [QSA,L]
+	# 全部導向 index.php
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule !^favicon\.ico$ index.php [L]
+</IfModule>
 
-    # 錯誤頁面
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ error.php?status=404 [L]
-
-    # favicon.ico （僅本專案為根目錄時有效）
-    Redirect "/favicon.ico" "https://fakeimg.pl/256x256/?text=kong0107"
-
-    # 防盜連
-    RewriteCond expr "! %{HTTP_REFERER} -strmatch '*://%{HTTP_HOST}/*'"
-    RewriteRule !(^|/|\.php)$ error.php?status=403 [L]
-
-    # 其他方式的缺點：
-    # - ErrorDocument:
-    #   - 路徑是相對於 `DocumentRoot` ，但本專案未必置於根目錄。
-    #   - 無論請求何種檔案類型，均傳回同樣相同檔案。若是預期 JSON 卻收到 HTML 的話，不太好。
-    #   - 每種錯誤碼都要寫一行。
-    # - RewriteRule \.jpg$ error.svg [L]
-    #   - 不會是 403 ，而會是 200 ；此情形也不能用 [R=403] （會變成引用 ErrorDocument ）
-    #   - 每種檔案類型都要寫一行。
+<IfModule headers_module>
+	Header set Cache-Control "max-age=86400, must-revalidate, public"
+	<FilesMatch "\.php$">
+		Header unset Cache-Control
+	</FilesMatch>
 </IfModule>
