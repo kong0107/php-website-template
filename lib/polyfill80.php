@@ -32,8 +32,6 @@ if (! function_exists('str_contains')) {
 /**
  * Determine if a string contains a given substring
  *
- * Performs a case-sensitive check indicating if `needle` is contained in `haystack`.
- *
  * @param string $haystack The string to search in.
  * @param string $needle The substring to search for in the `haystack`.
  *
@@ -53,8 +51,6 @@ if (! function_exists('str_starts_with')) {
 /**
  * Checks if a string starts with a given substring
  *
- * Performs a case-sensitive check indicating if `haystack` begins with `needle`.
- *
  * @param string $haystack The string to search in.
  * @param string $needle The substring to search for in the `haystack`.
  *
@@ -69,8 +65,6 @@ function str_starts_with($haystack, $needle) {
 if (! function_exists('str_ends_with')) {
 /**
  * Checks if a string ends with a given substring
- *
- * Performs a case-sensitive check indicating if `haystack` ends with `needle`.
  *
  * @param string $haystack The string to search in.
  * @param string $needle The substring to search for in the `haystack`.
@@ -96,12 +90,6 @@ if (! function_exists('fdiv')) {
 /**
  * Divides two numbers, according to IEEE 754
  *
- * Returns the floating point result of dividing the `num1` by the `num2`.
- * If the `num2` is zero, then one of `INF`, -`INF`, or `NAN` will be returned.
- *
- * Note that in comparisons, `NAN` will never be equal (==) or identical (===)
- * to any value, including itself.
- *
  * @param float $num1 The dividend (numerator)
  * @param float $num2 The divisor
  *
@@ -119,17 +107,6 @@ function fdiv($num1, $num2) {
 if (! function_exists('get_debug_type')) {
 /**
  * Gets the type name of a variable in a way that is suitable for debugging
- *
- * Returns the resolved name of the PHP variable `value`.
- * This function will resolve
- * 	objects to their class name,
- *  resources to their resource type name, and
- * 	scalar values to their common name
- * as would be used in type declarations.
- *
- * This function differs from `gettype()` in that
- * it returns type names that are more consistent with actual usage,
- * rather than those present for historical reasons.
  *
  * @param mixed $value The variable being type checked.
  *
@@ -164,8 +141,6 @@ function get_debug_type($value) {
 if (! function_exists('get_resource_id')) {
 /**
  * Returns an integer identifier for the given resource
- *
- * This function provides a type-safe way for generating the integer identifier for a resource.
  *
  * @param resource $resource The evaluated resource handle.
  *

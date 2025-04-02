@@ -3,9 +3,10 @@
  * Polyfill to use functions new in PHP 8.1.
  *
  * Following new features in PHP 8.1 are NOT implemented:
- * * function enum_exists
  * * attribute ReturnTypeWillChange
  * * class CURLStringFile
+ * * function enum_exists
+ * * function sodium_crypto_stream_xchacha20_xor
  *
  * @see https://www.php.net/releases/8.1/
  */
@@ -18,10 +19,6 @@ if (! defined('MYSQLI_REFRESH_REPLICA')) {
 if (! function_exists('array_is_list')) {
 /**
  * Checks whether a given array is a list
- *
- * Determines if the given `array` is a list.
- * An array is considered a list if its keys consist of consecutive numbers
- * from 0 to `count($array)-1`.
  *
  * @param array $array The array being evaluated.
  *
