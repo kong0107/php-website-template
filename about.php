@@ -3,8 +3,8 @@ require_once './lib/start.php';
 $Get->convert();
 
 $page_info = [
-    'title' => '關於本站',
-    'description' => '',
+	'title' => '關於本站',
+	'description' => '',
 ];
 
 require 'html-header.php';
@@ -12,7 +12,7 @@ require 'html-header.php';
 ?>
 
 <div class="markdown">
-    <?php readfile('var/markdown/about.md'); ?>
+	<?php readfile('var/markdown/about.md'); ?>
 </div>
 
 <?php require 'html-footer.php'; ?>

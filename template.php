@@ -38,11 +38,11 @@ $Get->convert(['foo' => 'bool', 'messages' => 'array']);
  *   * url: 頁面連結，若是最後一個，不要設定此值。
  */
 $page_info = [
-    'title' => '範例頁面', //
-    'description' => '這一行會出現在 HTML 檔頭。',
-    'image' => 'https://fakeimg.pl/256x256/?font=noto&text=%E7%AF%84%E4%BE%8B',
-    'itemtype' => 'WebPage',
-    'breadcrumb_list' => []
+	'title' => '範例頁面', //
+	'description' => '這一行會出現在 HTML 檔頭。',
+	'image' => 'https://fakeimg.pl/256x256/?font=noto&text=%E7%AF%84%E4%BE%8B',
+	'itemtype' => 'WebPage',
+	'breadcrumb_list' => []
 ];
 
 // 開始輸出 HTML

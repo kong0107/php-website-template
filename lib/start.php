@@ -3,20 +3,20 @@ require_once 'init.php';
 
 // 檢查與啟動 Session 。
 switch (session_status()) {
-    case PHP_SESSION_DISABLED: {
-        site_log('error: session disabled');
-        http_response_code(500);
-        exit;
-    }
-    case PHP_SESSION_NONE: {
-        ini_set('session.gc_maxlifetime', 604800);
-        session_set_cookie_params(604800);
-        session_start();
-        break;
-    }
-    case PHP_SESSION_ACTIVE: {
-        // do nothing. this could be matched if visiting `login.php`
-    }
+	case PHP_SESSION_DISABLED: {
+	    site_log('error: session disabled');
+	    http_response_code(500);
+	    exit;
+	}
+	case PHP_SESSION_NONE: {
+	    ini_set('session.gc_maxlifetime', 604800);
+	    session_set_cookie_params(604800);
+	    session_start();
+	    break;
+	}
+	case PHP_SESSION_ACTIVE: {
+	    // do nothing. this could be matched if visiting `login.php`
+	}
 }
 
 
@@ -50,21 +50,21 @@ switch (session_status()) {
 // }
 require_once __DIR__ . '/pdoi.php';
 try {
-    $db = new PDOi(
-        'mysql',
-        [
-            'host' => CONFIG['mysqli.hostname'],
-            'dbname' => CONFIG['mysqli.database'],
-            'charset' => 'utf8mb4'
-        ],
-        CONFIG['mysqli.username'],
-        CONFIG['mysqli.password']
-    );
-    $db->exec(sprintf("SET time_zone = '%s';", date('P')));
+	$db = new PDOi(
+	    'mysql',
+	    [
+	        'host' => CONFIG['mysqli.hostname'],
+	        'dbname' => CONFIG['mysqli.database'],
+	        'charset' => 'utf8mb4'
+	    ],
+	    CONFIG['mysqli.username'],
+	    CONFIG['mysqli.password']
+	);
+	$db->exec(sprintf("SET time_zone = '%s';", date('P')));
 } catch (PDOException $e) {
-    site_log('PDO Error %d: %s', $e->getCode(), $e->getMessage());
-    http_response_code(500); // 這裡不能用 error_output() ，不然會遞迴。
-    exit;
+	site_log('PDO Error %d: %s', $e->getCode(), $e->getMessage());
+	http_response_code(500); // 這裡不能用 error_output() ，不然會遞迴。
+	exit;
 }
 
 
@@ -83,53 +83,53 @@ $Session = new Associative($_SESSION, true);
  * 登入的處理另見 `/login.php` 。
  */
 if (($user = $Session->user)
-    && ($user->access_expire < $_SERVER['REQUEST_TIME'])
+	&& ($user->access_expire < $_SERVER['REQUEST_TIME'])
 ) {
-    if ($user->refresh_token) {
-        try {
-            $response = http_post('https://oauth2.googleapis.com/token', [
-                'grant_type' => 'refresh_token',
-                'client_id' => CONFIG['google.id'],
-                'client_secret' => CONFIG['google.secret'],
-                'refresh_token' => $user->refresh_token
-            ]);
-        }
-        catch (Throwable $e) {
-            site_log('重新整理 %s 的存取權杖失敗。', $user->email);
-            $db->insert('log_login', [
-                'person' => $user->identifier,
-                'action' => 'logout-by-refresh-failure',
-                'remote_addr' => $_SERVER['REMOTE_ADDR'],
-                'request_headers' => json_encode(apache_request_headers(), JSON_UNESCAPED_SLASHES)
-            ]);
-            unset($Session->user);
-        }
+	if ($user->refresh_token) {
+	    try {
+	        $response = http_post('https://oauth2.googleapis.com/token', [
+	            'grant_type' => 'refresh_token',
+	            'client_id' => CONFIG['google.id'],
+	            'client_secret' => CONFIG['google.secret'],
+	            'refresh_token' => $user->refresh_token
+	        ]);
+	    }
+	    catch (Throwable $e) {
+	        site_log('重新整理 %s 的存取權杖失敗。', $user->email);
+	        $db->insert('log_login', [
+	            'person' => $user->identifier,
+	            'action' => 'logout-by-refresh-failure',
+	            'remote_addr' => $_SERVER['REMOTE_ADDR'],
+	            'request_headers' => json_encode(apache_request_headers(), JSON_UNESCAPED_SLASHES)
+	        ]);
+	        unset($Session->user);
+	    }
 
-        if (empty($response['body'])) {
-            site_log('非預期：HTTP 成功，但是重新整理存取權杖失敗？');
-            site_log($response);
-            error_output(500, '與 Google 的連線發生錯誤');
-        }
-        site_log('重新整理 %s 的存取權杖成功。', $user->email);
+	    if (empty($response['body'])) {
+	        site_log('非預期：HTTP 成功，但是重新整理存取權杖失敗？');
+	        site_log($response);
+	        error_output(500, '與 Google 的連線發生錯誤');
+	    }
+	    site_log('重新整理 %s 的存取權杖成功。', $user->email);
 
-        $result = json_decode($response['body']);
-        $db->insert('log_login', [
-            'person' => $user->identifier,
-            'action' => 'refresh',
-            'remote_addr' => $_SERVER['REMOTE_ADDR'],
-            'request_headers' => json_encode(apache_request_headers(), JSON_UNESCAPED_SLASHES)
-        ]);
-        $Session->user->access_token = $result->access_token;
-        $Session->user->access_expire = $_SERVER['REQUEST_TIME'] + $result->expires_in;
-    }
-    else {
-        site_log('%s 的存取權杖逾期，將其登出。', $user->email);
-        $db->insert('log_login', [
-            'person' => $user->identifier,
-            'action' => 'logout-by-expiration',
-            'remote_addr' => $_SERVER['REMOTE_ADDR'],
-            'request_headers' => json_encode(apache_request_headers(), JSON_UNESCAPED_SLASHES)
-        ]);
-        unset($Session->user);
-    }
+	    $result = json_decode($response['body']);
+	    $db->insert('log_login', [
+	        'person' => $user->identifier,
+	        'action' => 'refresh',
+	        'remote_addr' => $_SERVER['REMOTE_ADDR'],
+	        'request_headers' => json_encode(apache_request_headers(), JSON_UNESCAPED_SLASHES)
+	    ]);
+	    $Session->user->access_token = $result->access_token;
+	    $Session->user->access_expire = $_SERVER['REQUEST_TIME'] + $result->expires_in;
+	}
+	else {
+	    site_log('%s 的存取權杖逾期，將其登出。', $user->email);
+	    $db->insert('log_login', [
+	        'person' => $user->identifier,
+	        'action' => 'logout-by-expiration',
+	        'remote_addr' => $_SERVER['REMOTE_ADDR'],
+	        'request_headers' => json_encode(apache_request_headers(), JSON_UNESCAPED_SLASHES)
+	    ]);
+	    unset($Session->user);
+	}
 }

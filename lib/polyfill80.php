@@ -1,10 +1,10 @@
 <?php
 /**
- * Polyfill to use functions new in PHP 8.0.
+ * Polyfill to use some features in PHP 8.0.
  *
  * @see https://www.php.net/manual/en/migration80.new-features.php
  *
- * Implemented features in this file:
+ * This file has implemented:
  * * constant FILTER_VALIDATE_BOOL
  * * interface Stringable
  * * functions str_contains, str_starts_with, str_ends_with

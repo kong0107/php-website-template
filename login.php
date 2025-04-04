@@ -1,128 +1,96 @@
 <?php
 /**
- * 本檔案處理：
- * 1. 準備登入。
- * 2. 登出。
- * 3. 登入後的驗證：從 Google 被轉回來。
+ * 本檔案處理登入與登出的操作，但不包含登入狀態的驗證。
  *
- * 確認登入狀態、確認未逾時的程式碼另見 `/lib/start.php` 。
- *
- * https://growingdna.com/google-oauth-2-0-for-3rd-party-login/
- * https://developers.google.com/identity/protocols/oauth2/web-server
- * https://developers.google.com/identity/openid-connect/openid-connect
+ * @see https://developers.google.com/identity/protocols/oauth2/web-server
+ * @see https://developers.google.com/identity/openid-connect/openid-connect
  */
 require_once './lib/init.php';
 
+/// 登出
+if (isset($_GET['logout'])) {
+	my_set_cookie('at_hash');
+	if (isset($current_user)) site_log("$current_user->email 主動登出了。");
+	if (isset($_COOKIE['at_hash'])) json_file_set('./var/tokens.json', $_COOKIE['at_hash']);
+	header('Location: .');
+	exit(0);
+}
+
+/// 載入 Google 設定
+if (! is_readable('./var/client_secret.json')) finish(500, '缺乏設定檔');
+$google = json_file_read('./var/client_secret.json')->web;
+my_session_start();
+
+/// 如果是直接連來這一頁，那就轉去 Google 的登入頁
+if (empty($_GET['state'])) {
+	$state = $_SESSION['csrf'] = base64url_encode(random_bytes(24));
+	if (! empty($_SERVER['HTTP_REFERER'])) {
+	    $parts = parse_url($_SERVER['HTTP_REFERER']);
+	    if ($parts['host'] === $_SERVER['HTTP_HOST']
+	        && ! str_ends_with($parts['path'], 'login.php')
+	    ) {
+	        $referer = substr($_SERVER['HTTP_REFERER'], strpos($_SERVER['HTTP_REFERER'], '/', 10));
+	        $state .= $referer;
+	    }
+	} // append redirect target after csrf token
+
+	$query = http_build_query([
+	    'access_type' => 'offline',
+	    'client_id' => $google->client_id,
+	    'redirect_uri' => $google->redirect_uris[0],
+	    'response_type' => 'code',
+	    'scope' => 'openid profile email',
+	    'state' => $state
+	]);
+	header('Location: ' . $google->auth_uri . '?' . $query);
+	exit(0);
+}
+
+/// 處理 OAuth2 登入
+$csrf = $_SESSION['csrf'];
+unset($_SESSION['csrf']);
+if (! str_starts_with($_GET['state'], $csrf)) {
+	site_log('CSRF validation failed: no match.');
+	header('Location: login.php');
+	exit(0);
+}
+
+$start = microtime(true);
+$res = fetch_curl($google->token_uri, array(
+	'method' => 'POST',
+	'body' => array(
+	    'grant_type' => 'authorization_code',
+	    'client_id' => $google->client_id,
+	    'client_secret' => $google->client_secret,
+	    'code' => $_GET['code'],
+	    'redirect_uri' => $google->redirect_uris[0]
+	)
+));
+site_log('請求權杖花了 %.3f 毫秒', 1000 * (microtime(true) - $start));
+if (isset($res['errno'])) {
+	site_log($res);
+	finish(401, '登入失敗。');
+}
+
+$res['body'] = json_decode($res['body']);
+$id_token = $res['body']->id_token = jwt_decode($res['body']->id_token)->payload;
+json_file_write('./var/last_access_token.json', (object) $res);
+
+
 /**
- * 如果是直接連來這一頁，那就轉去 Google 的登入頁。
+ * 直接拿 at_hash 當 key ，存在 Cookie ；其他需要的則存在伺服器。
+ * Cookie 存活的時間要比 token 長，伺服器才有可能知道要去確認 token 是否過期。
  */
-if (empty($_GET['logout']) && empty($_GET['code'])) {
-    switch (session_status()) {
-        case PHP_SESSION_DISABLED: {
-            site_log('error: session disabled');
-            http_response_code(500);
-            exit;
-        }
-        case PHP_SESSION_NONE: {
-            session_set_cookie_params(120); // 讓 csrf_token 是短時效
-            session_start();
-            break;
-        }
-        case PHP_SESSION_ACTIVE: {
-            site_log('warning: session has already been started; could not set `session.cookie_lifetime` in ' . __FILE__);
-        }
-    }
+my_set_cookie('at_hash', $id_token->at_hash, 3600 * 168);
 
-    /**
-     * 加入防止 CSRF 的暫存亂數，後面接上前一頁的位址，以便登入完成後轉址回去。
-     */
-    $state = $_SESSION['csrf_token'] = base64url_encode(random_bytes(24));
-    if (str_starts_with($_SERVER['HTTP_REFERER'], CONFIG['site.root'])) {
-        $referer = substr($_SERVER['HTTP_REFERER'], strlen(CONFIG['site.root']));
-        if (! str_starts_with($referer, 'login.php')) $state .= $referer;
-    }
+json_file_set('./var/tokens.json', $id_token->at_hash, array(
+	'access_token' => $res['body']->access_token,
+	'refresh_token' => property_exists($res['body'], 'refresh_token') ? $res['body']->refresh_token : null,
+	'exp' => $id_token->exp,
+	'email' => $id_token->email,
+	'name' => $id_token->name
+));
 
-    $query = http_build_query([
-        'access_type' => 'offline',
-        'client_id' => CONFIG['google.id'],
-        'redirect_uri' => CONFIG['site.root'] . 'login.php',
-        'response_type' => 'code',
-        'scope' => 'openid profile email',
-        'state' => $state
-    ]);
-    redirect('https://accounts.google.com/o/oauth2/v2/auth?' . $query);
-}
-
-
-/**
- * 這邊才載入其他初始設定，不然會跟上面的 session_start() 衝突。
- */
-require_once './lib/start.php';
-
-/**
- * 處理登出。
- */
-if ($Get->logout) {
-    site_log('%s 主動登出了。', $_SESSION['user']->identifier);
-    $db->insert('log_login', [
-        'person' => $_SESSION['user']->identifier,
-        'action' => 'logout-by-user',
-        'remote_addr' => $_SERVER['REMOTE_ADDR'],
-        'request_headers' => json_encode(apache_request_headers(), JSON_UNESCAPED_SLASHES)
-    ]);
-    unset($Session->user);
-    redirect('./index.php');
-}
-
-
-/**
- * 處理 OAuth2 登入。
- */
-$csrf_token = $Session->csrf_token;
-unset($Session->csrf_token); // 先清掉，省得要擔心會再被利用
-
-if (! str_starts_with($Get->state, $csrf_token)) {
-    site_log('未通過 STP 測試，可能是逾時或是 CSRF 。');
-    redirect('login.php'); // 重新再讀一次本頁，但不帶參數，即可因上面的程式而轉去登入。
-}
-
-try {
-    $response = http_post('https://oauth2.googleapis.com/token', [
-        'grant_type' => 'authorization_code',
-        'client_id' => CONFIG['google.id'],
-        'client_secret' => CONFIG['google.secret'],
-        'code' => $Get->code,
-        'redirect_uri' => CONFIG['site.root'] . 'login.php'
-    ]);
-}
-catch (Throwable $e) {
-    site_log('未能收到存取權杖。');
-    error_output(401, '登入失敗。');
-}
-
-$result = json_decode($response['body']);
-$id_token = jwt_decode($result->id_token)->payload;
-
-$db->replace('Person', $user = [
-    'identifier' => $id_token->sub,
-    'email' => $id_token->email,
-    'givenName' => $id_token->given_name,
-    'familyName' => $id_token->family_name
-]);
-$user['role'] = $db->get_one("SELECT `role` FROM `Person` WHERE `identifier` = '{$user['identifier']}'");
-
-$db->insert('log_login', [
-    'person' => $user['identifier'],
-    'action' => 'login',
-    'remote_addr' => $_SERVER['REMOTE_ADDR'],
-    'request_headers' => json_encode(apache_request_headers(), JSON_UNESCAPED_SLASHES)
-]);
-site_log('收到 %s 的存取權杖。', $user['email']);
-
-$Session->user = (object) array_merge($user, [
-    'refresh_token' => $result->refresh_token ?? null,
-    'access_token' => $result->access_token,
-    'access_expire' => $id_token->exp
-]);
-
-redirect('./' . substr($Get->state, strlen($csrf_token)));
+site_log("$id_token->email 登入成功");
+$referer = substr($_GET['state'], strlen($csrf));
+header('Location: ' . ($referer ?: '.'));

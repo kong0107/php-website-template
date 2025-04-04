@@ -464,11 +464,11 @@ class PDOi {
 }
 
 if (! function_exists('array_is_list')) {
-    function array_is_list($array) {
+	function array_is_list($array) {
 		$count = count($array);
 		for ($i = 0; $i < $count; ++$i) {
 			if (! array_key_exists($i, $array)) return false;
 		}
 		return true;
-    }
+	}
 }

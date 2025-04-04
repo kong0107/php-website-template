@@ -12,6 +12,16 @@
 
 # 需求
 
+盡量支援 PHP 7.4 ，即
+* 已有 arrow function ，如 `fn ($arg) => $arg * 2`
+* 未支援命名參數，如 PHP 8.0 起的 `htmlspecialchars($string, double_encode: false);`
+* 函數宣告時可指定引數和回傳值，但限於單一型別且不支援 `mixed`, `null`, `false`, `true` 。
+  （PHP 8.0 起才支援聯合型別 `A|B`； 8.1 起支援交集類型如 `A&B` ； 8.2 起支援 `null`, `false`, `true`）
+* 未支援 nullsafe operator ，即 PHP 8.0 引入的 `?->` 。
+* 未支援 `enum` 結構。可用 `class` 模擬，但會缺少 `::cases` 方法。
+* 八進位表示法僅看得懂 `016` ，看不懂 `0o16` 。（後者於 PHP 8.1 支援）
+
+較簡單的函數則可透過引用 `lib/polyfill8*.php` 來支援。
 
 # 網站地圖
 
@@ -45,7 +55,7 @@ CSS Class 用 `kebab-case` 格式。
 ### 標籤屬性順序
 
 * itemprop
-* itemtype （只要列出名字就好，網址和 `itemscope` 會被 `main.js` 補上。）
+* itemtype （只要列出名字就好，網址和 `itemscope` 會被 `beforeend.js` 補上。）
 * role （給視障者聽；給工程師看）
 * aria-label （給視障者聽；給工程師看）
 * title （給使用者看）
@@ -58,16 +68,20 @@ CSS Class 用 `kebab-case` 格式。
 
 ## PHP
 
+* 各種命名以 `snake_case` 為主
 * 與 HTML 互嵌而有判斷式時，用另一種標記：
   ```php
   <?php if ($a == 5): ?>
-    A is equal to 5
+	A is equal to 5
   <?php endif; ?>
   ```
   此結構亦可用於迴圈。
 
+
+
 ## JavaScript
 
+* 各種命名以 `camelCase` 為主
 * 善用 `kong-util` 。
   [範例](https://kong0107.github.io/kong-util/demo.html)（←見此頁的 JS ）
 

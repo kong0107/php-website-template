@@ -1,5 +1,6 @@
 DirectoryIndex index.php index.html
-Options FollowSymLinks
+Options SymLinksIfOwnerMatch
+AddCharset utf-8 .txt .html .htm .css .js .json .xml .md
 
 <IfModule rewrite_module>
 	RewriteEngine On
@@ -13,10 +14,10 @@ Options FollowSymLinks
 	RewriteRule ^\. - [R=404,L] # 根目錄的隱藏檔/目錄
 	RewriteRule /\. - [R=404,L] # 子目錄裡的隱藏檔/目錄
 
-	# 全部導向 index.php
+	# 找不到就導向 error.php
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule !^favicon\.ico$ index.php [L]
+	RewriteRule !^favicon\.ico$ error.php?status=404 [QSA,L]
 </IfModule>
 
 <IfModule headers_module>

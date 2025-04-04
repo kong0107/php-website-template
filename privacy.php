@@ -3,8 +3,8 @@ require_once './lib/start.php';
 $Get->convert();
 
 $page_info = [
-    'title' => '隱私權政策',
-    'description' => CONFIG['site.name'] . '的隱私權政策',
+	'title' => '隱私權政策',
+	'description' => CONFIG['site.name'] . '的隱私權政策',
 ];
 
 require 'html-header.php';
@@ -12,7 +12,7 @@ require 'html-header.php';
 ?>
 
 <div class="markdown">
-    <?php readfile('var/markdown/privacy.md'); ?>
+	<?php readfile('var/markdown/privacy.md'); ?>
 </div>
 
 <?php require 'html-footer.php'; ?>

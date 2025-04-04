@@ -1,4 +1,5 @@
-vendor/
 var/*
-!var/.htaccess
-!var/config.ini-sample
+!**/.htaccess
+!var/logs/
+var/logs/*
+!**/.gitkeep

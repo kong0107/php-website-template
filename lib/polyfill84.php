@@ -1,11 +1,12 @@
 <?php
 /**
- * Polyfill to use functions new in PHP 8.4.
+ * Polyfill to use some features in PHP 8.4.
  *
- * Following new features in PHP 8.4 are NOT implemented:
- * * attribute Deprecated
+ * @see https://www.php.net/manual/en/migration84.new-features.php
  *
- * @see https://www.php.net/releases/8.4/
+ * This file has implemented:
+ * *
+ *
  */
 if (PHP_VERSION_ID < 80400) {
 
