@@ -12,7 +12,7 @@ header('Content-Type: text/html; charset=UTF-8');
 	<base href="<?= CONFIG['site.root'] ?>"><!-- 為了圖片的相對路徑。注意也因此： HTML 和 JS 用的路徑基準是這個，但在 PHP 則不是。 -->
 	<link rel="icon" href="https://fakeimg.pl/256x256/?font=noto&text=<?= urlencode(CONFIG['site.name']) ?>">
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/kong-util@0.7.12/dist/all.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/kong-util@0.8.14/dist/all.js"></script>
 	<link rel="stylesheet" href="assets/main.css?mtime=<?= filemtime('../assets/main.css') ?>">
 </head>
 <body>

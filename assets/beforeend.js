@@ -1,15 +1,14 @@
 /// 網址標準化
-(() => {
-	const l = location, c = $('link[rel="canonical"]')?.href;
+((c, l) => {
 	if (c && c !== l.origin + l.pathname + l.search)
 		history.replaceState({}, '', c + l.hash);
-})();
+})($('link[rel="canonical"]')?.href, location);
 
 /// 缺失屬性補齊： [itemtype]
 $$('[itemtype]').forEach(item => {
 	item.setAttribute('itemscope', '');
 	const type = item.getAttribute('itemtype');
-	if (! item.includes('/')) item.setAttribute(`https://schema.org/${type}`);
+	if (! type.includes('/')) item.setAttribute('itemtype', `https://schema.org/${type}`);
 });
 
 /// 缺失屬性補齊： [alt][aria-label][aria-hidden]

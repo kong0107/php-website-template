@@ -10,7 +10,7 @@ function site_log(
 		? (count($values) ? sprintf($target, ...$values) : $target)
 		: var_export($target, true)
 	;
-	$time = date('ymd_His', $_SERVER['REQUEST_TIME']) . substr(bcmod($_SERVER['REQUEST_TIME_FLOAT'], 1, 6), 1);
+	$time = date('ymd_His', $_SERVER['REQUEST_TIME']) . substr(bcmod($_SERVER['REQUEST_TIME_FLOAT'], 1, 3), 1);
 
 	file_put_contents(
 		ini_get('error_log'),

@@ -36,7 +36,7 @@ if (isset($current_user) && $current_user->exp < $_SERVER['REQUEST_TIME']) {
 	            'refresh_token' => $current_user->refresh_token
 	        )
 	    ));
-		site_log('重整權杖花了 %.3f 毫秒', 1000 * (microtime(true) - $start));
+		site_log('重整權杖花了 %d 毫秒', 1000 * (microtime(true) - $start));
 	    if ($res['errno']) {
 			site_log($res);
 			unset($current_user);
