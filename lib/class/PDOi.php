@@ -6,6 +6,7 @@
 
 class PDOi {
 	public static $defaultOptions = array(
+		PDO::ATTR_PERSISTENT => true,
 		PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
 		PDO::ATTR_STRINGIFY_FETCHES => false,
@@ -17,12 +18,12 @@ class PDOi {
 		PDO::PARAM_NULL => 'null',
 		PDO::PARAM_INT => 'int',
 		PDO::PARAM_STR => 'str',
-		PDO::PARAM_STR_NATL => 'str_natl',
-		PDO::PARAM_STR_CHAR => 'str_char',
+		// PDO::PARAM_STR_NATL => 'str_natl', // PHP >= 7.2
+		// PDO::PARAM_STR_CHAR => 'str_char', // PHP >= 7.2
 		PDO::PARAM_LOB => 'lob',
 		PDO::PARAM_STMT => 'stmt',
 		PDO::PARAM_INPUT_OUTPUT => 'input_output'
-	); // https://www.php.net/manual/zh/pdo.constants.php
+	); // https://www.php.net/manual/pdo.constants.php
 
 	private PDO $db;
 

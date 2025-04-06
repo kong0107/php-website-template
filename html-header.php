@@ -19,7 +19,7 @@ header('Content-Type: text/html; charset=utf-8');
 </head>
 <body>
 	<script src="assets/afterbegin.js?<?= filemtime('assets/afterbegin.js') ?>"></script>
-	<div class="container">
+	<div class="container d-flex flex-column min-vh-100">
 	    <header>
 	        <nav class="navbar">
 	            <a class="navbar-brand" href="./">SiteName</a>
@@ -47,5 +47,5 @@ header('Content-Type: text/html; charset=utf-8');
 	    </header>
 	    <main itemprop="mainContentOfPage"
 	        itemtype="WebPageElement"
-	        class="my-2 pt-2 pb-5 border-top border-bottom"
+	        class="my-2 pt-2 pb-5 border-top border-bottom flex-grow-1"
 	    >

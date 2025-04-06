@@ -9,7 +9,7 @@ require_once './lib/init.php';
 
 /// 登出
 if (isset($_GET['logout'])) {
-	my_set_cookie('at_hash');
+	set_cookie('at_hash');
 	if (isset($current_user)) site_log("$current_user->email 主動登出了。");
 	if (isset($_COOKIE['at_hash'])) json_file_set('./var/tokens.json', $_COOKIE['at_hash']);
 	header('Location: .');
@@ -81,7 +81,7 @@ json_file_write('./var/last_access_token.json', (object) $res);
  * 直接拿 at_hash 當 key ，存在 Cookie ；其他需要的則存在伺服器。
  * Cookie 存活的時間要比 token 長，伺服器才有可能知道要去確認 token 是否過期。
  */
-my_set_cookie('at_hash', $id_token->at_hash, 3600 * 168);
+set_cookie('at_hash', $id_token->at_hash, 3600 * 168);
 
 json_file_set('./var/tokens.json', $id_token->at_hash, array(
 	'access_token' => $res['body']->access_token,

@@ -1,18 +1,29 @@
 <?php
-require_once __DIR__ . '/utility.php';
-require_once __DIR__ . '/string.php';
+/**
+ * Functions for this project.
+ */
+foreach (array('polyfill', 'utility') as $dir) {
+	foreach (scandir($dir) as $filename) {
+		if (substr($filename, -4) !== '.php') continue;
+		require_once __DIR__ . "/$dir/$filename";
+	}
+}
 
-function site_log(
-	mixed $target,
-	mixed ...$values
-) : void {
+
+/**
+ * Append message to `error_log`
+ * @param mixed $target
+ * @param mixed ...$values Used as arguments for `sprintf` if and only if `target` is string
+ * @return int bytes written
+ */
+function site_log($target, ...$values) {
 	$text = is_string($target)
 		? (count($values) ? sprintf($target, ...$values) : $target)
 		: var_export($target, true)
 	;
 	$time = date('ymd_His', $_SERVER['REQUEST_TIME']) . substr(bcmod($_SERVER['REQUEST_TIME_FLOAT'], 1, 3), 1);
 
-	file_put_contents(
+	return file_put_contents(
 		ini_get('error_log'),
 		"$time {$_SERVER['REQUEST_URI']}\n$text\n\n",
 		FILE_APPEND | LOCK_EX
@@ -20,36 +31,48 @@ function site_log(
 }
 
 
-function error_handler(
-	int $errno,
-	string $errstr,
-	string $errfile,
-	int $errline
-) : bool {
+/**
+ * Error handler to be set by `set_error_handler()`
+ * @param int $number
+ * @param string $message
+ * @param string $filepath
+ * @param int $line
+ * @return true To skip the normal error handler
+ */
+function error_handler($number, $message, $filepath, $line) {
 	$type_name = array(
 		'Error', 'Warning', 'Parse', 'Notice',
 		'CoreError', 'CoreWarning', 'CompileError', 'CompileWarning',
 		'UserError', 'UserWarning', 'UserNotice',
 		'Strict', 'RecoverableError', 'Deprecated', 'UserDeprecated'
-	)[intlog($errno)];
-	site_log("$type_name: $errstr\nin $errfile:$errline");
+	)[intlog($number)];
+	site_log("$type_name: $message\nin $filepath:$line");
 	return true;
 }
 
 
-function exception_handler(
-	Throwable $ex
-) : void {
+/**
+ * Exception handler to set by `set_exception_handler()`
+ * @param Throwable $ex
+ * @param string $title Not used if called by `set_exception_handler()`
+ * @return never
+ */
+function exception_handler($ex, $title = '') {
 	$str = get_class($ex);
 	if ($code = $ex->getCode()) $str .= "#$code";
 	if ($msg = $ex->getMessage()) $str .= ": $msg";
 	site_log($str . chr(10) . $ex->getTraceAsString());
-	finish(500, '伺服器錯誤');
+	finish(500, $title);
 }
 
 
+/**
+ * Function to set by `register_shutdown_function()`
+ * @return void
+ */
 function shutdown_function() {
 	global $current_user;
+	$json_flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
 	$str = sprintf('%s + %s bytes sent in %.3f ms; mem peak use %s bytes',
 		number_format(ob_get_length()),
 		number_format(array_reduce(headers_list(), fn ($sum, $h) => $sum + strlen($h), 0)),
@@ -58,7 +81,7 @@ function shutdown_function() {
 	);
 
 	$request_info = array(
-		'user' => $current_user ? $current_user->email : null,
+		'user' => isset($current_user) ? $current_user->email : null,
 		'tcp_ip' => $_SERVER['REMOTE_ADDR']
 	);
 	if (preg_match_all('/(Chrome|Firefox|Edge?|Safari|Opera)\/\d+\.\d+/i', $_SERVER['HTTP_USER_AGENT'], $matches))
@@ -71,39 +94,51 @@ function shutdown_function() {
 	}
 	$str .= "\n" . json_encode($request_info, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-	if (count($_POST)) {
+	if (! empty($_POST)) {
 		$copy = $_POST;
 		unset($copy['csrf']);
 		if (isset($copy['password'])) $copy['password'] = null;
 		if (isset($copy['password-again'])) $copy['password-again'] = null;
-		$str .= "\n" . json_encode($copy, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+		$str .= "\n\$_POST = " . json_encode($copy, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+	}
+	if (! empty($_FILES)) {
+		$copy = array();
+		foreach ($_FILES as $file) {
+			unset($file['full_path']);
+			$copy[] = $file;
+		}
+		$str .= "\n\$_FILES = " . json_encode($copy, $json_flags);
 	}
 	site_log($str);
 
-	if ($error = error_get_last()) {
-		error_handler($error['type'], $error['message'], $error['file'], $error['line']);
-		finish(500, '伺服器錯誤');
+	if ($err = error_get_last()) {
+		error_handler($err['type'], $err['message'], $err['file'], $err['line']);
+		finish(500);
 	}
 }
 
 
-function finish(
-	int $status = 204,
-	string $title = '',
-	mixed $meta = null
-) {
-	$error = array(
+/**
+ * Exit after sending an HTTP status code, maybe with error message
+ * @see https://jsonapi.org/format/#error-objects
+ * @param int $status
+ * @param string $title
+ * @param mixed $meta
+ * @return never
+ */
+function finish($status = 204, $title = '', $meta = null) {
+	$obj = array(
 		'status' => (string) $status
 	);
-	if ($title) $error['title'] = $title;
+	if ($title) $obj['title'] = $title;
 
 	if ($meta) {
 		if (gettype($meta) === 'string') {
-			$error['detail'] = $meta;
+			$obj['detail'] = $meta;
 			site_log("$status $title\n$meta");
 		}
 		else {
-			$error['meta'] = $meta;
+			$obj['meta'] = $meta;
 			site_log("$status $title");
 			site_log($meta);
 		}
@@ -114,7 +149,7 @@ function finish(
 		http_response_code($status);
 		exit(0);
 	}
-	exit_json(array('errors' => array($error)), $status);
+	exit_json(array('errors' => array($obj)), $status);
 }
 
 
