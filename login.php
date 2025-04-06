@@ -55,7 +55,7 @@ if (! str_starts_with($_GET['state'], $csrf)) {
 	exit(0);
 }
 
-$start = microtime(true);
+$time = microtime(true);
 $res = fetch_curl($google->token_uri, array(
 	'method' => 'POST',
 	'body' => array(
@@ -66,7 +66,7 @@ $res = fetch_curl($google->token_uri, array(
 	    'redirect_uri' => $google->redirect_uris[0]
 	)
 ));
-site_log('請求權杖花了 %d 毫秒', 1000 * (microtime(true) - $start));
+site_log('請求權杖花了 %d 毫秒', 1000 * (microtime(true) - $time));
 if (isset($res['errno'])) {
 	site_log($res);
 	finish(401, '登入失敗。');

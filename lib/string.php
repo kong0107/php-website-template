@@ -96,17 +96,15 @@ function json_file_write(
 
 
 function json_file_get($filepath, $key, $default = null) {
-	if (! is_readable($filepath)) return $default;
-	$data = json_decode(file_get_contents($filepath));
+	$data = json_file_read($filepath);
+	if (! $data) return $default;
 	return property_exists($data, $key) ? $data->$key : $default;
 }
 
 
 function json_file_set($filepath, $key, $value = null) {
-	$data = is_readable($filepath)
-	    ? json_decode(file_get_contents($filepath), true)
-	    : array();
-	if ($value === null) unset($data[$key]);
-	else $data[$key] = $value;
-	return file_put_contents($filepath, json_encode_pretty($data));
+	$data = json_file_read($filepath) ?? array();
+	if ($value === null) unset($data->$key);
+	else $data->$key = $value;
+	return json_file_write($filepath, $data);
 }

@@ -26,7 +26,7 @@ if (isset($current_user) && $current_user->exp < $_SERVER['REQUEST_TIME']) {
 	my_set_cookie('at_hash');
 	if ($current_user->refresh_token) {
 	    $google = json_file_read('./var/client_secret.json')->web;
-		$start = microtime(true);
+		$time = microtime(true);
 	    $res = fetch_curl($google->token_uri, array(
 	        'method' => 'POST',
 	        'body' => array(
@@ -36,7 +36,7 @@ if (isset($current_user) && $current_user->exp < $_SERVER['REQUEST_TIME']) {
 	            'refresh_token' => $current_user->refresh_token
 	        )
 	    ));
-		site_log('重整權杖花了 %d 毫秒', 1000 * (microtime(true) - $start));
+		site_log('重整權杖花了 %d 毫秒', 1000 * (microtime(true) - $time));
 	    if ($res['errno']) {
 			site_log($res);
 			unset($current_user);
