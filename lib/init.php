@@ -1,4 +1,5 @@
 <?php
+header_remove('X-Powered-By');
 if (ini_get('user_ini.filename') !== '.user.ini') {
 	require_once __DIR__ . '/utility/info.php';
 	foreach (parse_ini_file(__DIR__ . '/../.user.ini') as $key => $value)

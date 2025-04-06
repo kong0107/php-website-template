@@ -3,7 +3,7 @@
  * Functions for this project.
  */
 foreach (array('polyfill', 'utility') as $dir) {
-	foreach (scandir($dir) as $filename) {
+	foreach (scandir(__DIR__ . "/$dir") as $filename) {
 		if (substr($filename, -4) !== '.php') continue;
 		require_once __DIR__ . "/$dir/$filename";
 	}

@@ -21,6 +21,7 @@ AddCharset utf-8 .txt .html .htm .css .js .json .xml .md
 </IfModule>
 
 <IfModule headers_module>
+	Header set Referrer-Policy "same-origin"
 	Header set Cache-Control "max-age=86400, must-revalidate, public"
 	<FilesMatch "\.php$">
 		Header unset Cache-Control
