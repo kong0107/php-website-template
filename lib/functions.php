@@ -95,7 +95,7 @@ function shutdown_function() {
 	$str .= "\n" . json_encode($request_info, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
 	if (! empty($_POST)) {
-		$copy = $_POST;
+		$copy = $_POST; // 去掉敏感資訊
 		unset($copy['csrf']);
 		if (isset($copy['password'])) $copy['password'] = null;
 		if (isset($copy['password-again'])) $copy['password-again'] = null;
@@ -104,7 +104,7 @@ function shutdown_function() {
 	if (! empty($_FILES)) {
 		$copy = array();
 		foreach ($_FILES as $file) {
-			unset($file['full_path']);
+			unset($file['full_path']); // 這個不可信又占空間
 			$copy[] = $file;
 		}
 		$str .= "\n\$_FILES = " . json_encode($copy, $json_flags);
@@ -149,6 +149,14 @@ function finish($status = 204, $title = '', $meta = null) {
 		http_response_code($status);
 		exit(0);
 	}
+
+	/// 若是因錯誤而結束，順便也記一下 cookie 和 session 的狀態
+	$json_flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+	$str = '$_COOKIE = ' . json_encode($_COOKIE, $json_flags);
+	if (session_status() === PHP_SESSION_ACTIVE)
+		$str .= "\n\$_SESSION = " . json_encode($_SESSION, $json_flags);
+	site_log($str);
+
 	exit_json(array('errors' => array($obj)), $status);
 }
 

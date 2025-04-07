@@ -1,4 +1,5 @@
 var/*
+!**/*.sample
 !**/.htaccess
 !var/logs/
 var/logs/*

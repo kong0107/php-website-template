@@ -4,14 +4,14 @@ require_once __DIR__ . '/class/PDOi.php';
 
 try {
 	$db = new PDOi(
-	    'mysql',
-	    [
-	        'host' => CONFIG['mysqli.hostname'],
-	        'dbname' => CONFIG['mysqli.database'],
-	        'charset' => 'utf8mb4'
-	    ],
-	    CONFIG['mysqli.username'],
-	    CONFIG['mysqli.password']
+	    CONFIG['dsn.driver'],
+	    array(
+	        'host' => CONFIG['dsn.host'],
+	        'dbname' => CONFIG['dsn.dbname'],
+	        'charset' => CONFIG['dsn.charset']
+		),
+	    CONFIG['pdo.username'],
+	    CONFIG['pdo.password']
 	);
 	$db->exec(sprintf("SET time_zone = '%s';", date('P')));
 }

@@ -1,7 +1,7 @@
 <?php
-
 /**
  * @package PDOi
+ * @see https://www.php.net/manual/book.pdo.php
  */
 
 class PDOi {
@@ -27,14 +27,16 @@ class PDOi {
 
 	private PDO $db;
 
-	/** @var callable(mixed): mixed */
+	/** @var ?callable(mixed): mixed */
 	private $logger = null;
 
 	/**
 	 * Constructor with different parameter list from parent.
 	 *
+	 * @see https://www.php.net/manual/pdo.drivers.php Driver name and keys of the driver
+	 *
 	 * @param string $driver driver name (ex: mysql, pgsql, sqlsrv, sqlite)
-	 * @param array|string $dsn_kv string for sqlite, assoc array for other drivers
+	 * @param array|string $dsn_kv Except sqlite can only use string here, other drivers can use either assoc array or string
 	 * @param string|null $username
 	 * @param string|null $password
 	 * @param array<int, mixed>|null $options
@@ -43,7 +45,7 @@ class PDOi {
 	 */
 	public function __construct(
 		$driver,
-		$dsn_kv,
+		$dsn_kv = '',
 		$username = null,
 		$password = null,
 		$options = null

@@ -19,7 +19,7 @@ if (isset($_GET['logout'])) {
 /// 載入 Google 設定
 if (! is_readable('./var/client_secret.json')) finish(500, '缺乏設定檔');
 $google = json_file_read('./var/client_secret.json')->web;
-my_session_start();
+assert_session_start();
 
 /// 如果是直接連來這一頁，那就轉去 Google 的登入頁
 if (empty($_GET['state'])) {
