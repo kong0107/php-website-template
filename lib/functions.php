@@ -17,21 +17,22 @@ foreach (array('polyfill', 'utility') as $dir) {
  * @return int bytes written
  */
 function site_log($target, ...$values) {
-	$text = is_string($target)
+	$message = is_string($target)
 		? (count($values) ? sprintf($target, ...$values) : $target)
 		: var_export($target, true)
 	;
-	$time = date('ymd_His', $_SERVER['REQUEST_TIME']) . substr(bcmod($_SERVER['REQUEST_TIME_FLOAT'], 1, 3), 1);
 
 	$filepath = ini_get('error_log');
 	if (empty($filepath) || $filepath === 'syslog') {
-		error_log($text);
-		return strlen($text);
+		error_log($message);
+		return strlen($message);
 	}
 
+	$time_req = date('ymd_His', $_SERVER['REQUEST_TIME']) . substr($_SERVER['REQUEST_TIME_FLOAT'], 10, 4);
+	$time_diff = number_format(1000 * (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']), 3);
 	return file_put_contents(
 		$filepath,
-		"$time {$_SERVER['REQUEST_URI']}\n$text\n\n",
+		"$time_req {$_SERVER['REQUEST_URI']}\n{$time_diff}ms\t$message\n\n",
 		FILE_APPEND | LOCK_EX
 	);
 }
@@ -78,11 +79,9 @@ function exception_handler($ex, $title = '') {
  */
 function shutdown_function() {
 	global $current_user;
-	$json_flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
-	$str = sprintf('%s + %s bytes sent in %.3f ms; mem peak use %s bytes',
+	$str = sprintf('%s + %s bytes sent; mem peak use %s bytes',
 		number_format(ob_get_length()),
 		number_format(array_reduce(headers_list(), fn ($sum, $h) => $sum + strlen($h), 0)),
-		1000 * (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']),
 		number_format(memory_get_peak_usage())
 	);
 
@@ -98,14 +97,14 @@ function shutdown_function() {
 		$key = 'HTTP_' . strtr(strtoupper($header_name), '-', '_');
 		if (isset($_SERVER[$key])) $request_info[$header_name] = $_SERVER[$key];
 	}
-	$str .= "\n" . json_encode($request_info, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+	$str .= "\n" . json_encode_fake($request_info);
 
 	if (! empty($_POST)) {
 		$copy = $_POST; // 去掉敏感資訊
 		unset($copy['csrf']);
 		if (isset($copy['password'])) $copy['password'] = null;
 		if (isset($copy['password-again'])) $copy['password-again'] = null;
-		$str .= "\n\$_POST = " . json_encode($copy, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+		$str .= "\n\$_POST = " . json_encode_fake($copy);
 	}
 	if (! empty($_FILES)) {
 		$copy = array();
@@ -113,7 +112,7 @@ function shutdown_function() {
 			unset($file['full_path']); // 這個不可信又占空間
 			$copy[] = $file;
 		}
-		$str .= "\n\$_FILES = " . json_encode($copy, $json_flags);
+		$str .= "\n\$_FILES = " . json_encode_fake($copy);
 	}
 	site_log($str);
 
@@ -157,10 +156,9 @@ function finish($status = 204, $title = '', $meta = null) {
 	}
 
 	/// 若是因錯誤而結束，順便也記一下 cookie 和 session 的狀態
-	$json_flags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
-	$str = '$_COOKIE = ' . json_encode($_COOKIE, $json_flags);
+	$str = '$_COOKIE = ' . json_encode_fake($_COOKIE);
 	if (session_status() === PHP_SESSION_ACTIVE)
-		$str .= "\n\$_SESSION = " . json_encode($_SESSION, $json_flags);
+		$str .= "\n\$_SESSION = " . json_encode_fake($_SESSION);
 	site_log($str);
 
 	exit_json(array('errors' => array($obj)), $status);
@@ -170,64 +168,64 @@ function finish($status = 204, $title = '', $meta = null) {
 
 /******** 輸出東西到前端 ********/
 
-function use_html_template($page_info = []) {
-	global $Get, $Session;
-	require __DIR__ . '/../html-header.php';
-	echo $page_info['html_body'] ?? '';
-	require __DIR__ . '/../html-footer.php';
-	exit;
-}
+// function use_html_template($page_info = []) {
+// 	global $Get, $Session;
+// 	require __DIR__ . '/../html-header.php';
+// 	echo $page_info['html_body'] ?? '';
+// 	require __DIR__ . '/../html-footer.php';
+// 	exit;
+// }
 
-function redirect(
-	string $url,
-	int $seconds = 0
-) : void {
-	if ($seconds < 0) $seconds = 0;
-	if (! $seconds && ! headers_sent()) header('Location: ' . $url);
-	use_html_template(array(
-	    'title' => '轉址',
-	    'html_head' => "
-	        <meta http-equiv=\"refresh\" content=\"$seconds; url=$url\">
-	        <script>setTimeout(() => location.href = '$url', {$seconds}000);</script>
-	    ",
-	    'html_body' => "預計於 $seconds 秒後跳轉，或請自行點按前往 <a href=\"$url\">$url</a> 。"
-	));
-}
+// function redirect(
+// 	string $url,
+// 	int $seconds = 0
+// ) : void {
+// 	if ($seconds < 0) $seconds = 0;
+// 	if (! $seconds && ! headers_sent()) header('Location: ' . $url);
+// 	use_html_template(array(
+// 	    'title' => '轉址',
+// 	    'html_head' => "
+// 	        <meta http-equiv=\"refresh\" content=\"$seconds; url=$url\">
+// 	        <script>setTimeout(() => location.href = '$url', {$seconds}000);</script>
+// 	    ",
+// 	    'html_body' => "預計於 $seconds 秒後跳轉，或請自行點按前往 <a href=\"$url\">$url</a> 。"
+// 	));
+// }
 
-/**
- * 傳送狀態碼給前端，依 MIME type 輸出適合的錯誤訊息。
- * 實際運作於 `error.php` ，與 `.htaccess` 導過去的錯誤共用程式碼。
- */
-function error_output(
-	int $status_code = 500,
-	string $body = '',
-	string $mime_type = 'text/html',
-	array $page_info = []
-) : void {
-	if ($mime_type === 'text/html')
-	    if (empty($page_info['html_body'])) $page_info['html_body'] = $body;
+// /**
+//  * 傳送狀態碼給前端，依 MIME type 輸出適合的錯誤訊息。
+//  * 實際運作於 `error.php` ，與 `.htaccess` 導過去的錯誤共用程式碼。
+//  */
+// function error_output(
+// 	int $status_code = 500,
+// 	string $body = '',
+// 	string $mime_type = 'text/html',
+// 	array $page_info = []
+// ) : void {
+// 	if ($mime_type === 'text/html')
+// 	    if (empty($page_info['html_body'])) $page_info['html_body'] = $body;
 
-	$http_response = array(
-	    'status' => $status_code,
-	    'type' => $mime_type,
-	    'body' => $body
-	);
-	require __DIR__ . '/../error.php';
-	exit;
-}
+// 	$http_response = array(
+// 	    'status' => $status_code,
+// 	    'type' => $mime_type,
+// 	    'body' => $body
+// 	);
+// 	require __DIR__ . '/../error.php';
+// 	exit;
+// }
 
-/**
- * 載入 `vocabulary.csv` 然後留下有翻譯過的，傳回關聯陣列作為字典。
- */
-function load_vocabulary(
-) : array {
-	$voc = [];
-	$lines = explode(chr(10), file_get_contents(__DIR__ . '/../schema/vocabulary.csv'));
-	foreach ($lines as $line) {
-	    if (! strlen($line)) continue;
-	    list($term, $tw) = explode(',', $line);
-	    $tw = trim($tw);
-	    if (strlen($tw)) $voc[$term] = $tw;
-	}
-	return $voc;
-}
+// /**
+//  * 載入 `vocabulary.csv` 然後留下有翻譯過的，傳回關聯陣列作為字典。
+//  */
+// function load_vocabulary(
+// ) : array {
+// 	$voc = [];
+// 	$lines = explode(chr(10), file_get_contents(__DIR__ . '/../schema/vocabulary.csv'));
+// 	foreach ($lines as $line) {
+// 	    if (! strlen($line)) continue;
+// 	    list($term, $tw) = explode(',', $line);
+// 	    $tw = trim($tw);
+// 	    if (strlen($tw)) $voc[$term] = $tw;
+// 	}
+// 	return $voc;
+// }

@@ -26,7 +26,7 @@ foreach (array('logs', 'uploads') as $dirname) {
 	if (! is_dir($dirpath)) {
 		$success = mkdir($dirpath, 0644, true);
 		if (! $success) {
-			site_log("Failed to make directory $dirpath");
+			error_log("Failed to make directory $dirpath");
 			finish(500);
 		}
 	}
