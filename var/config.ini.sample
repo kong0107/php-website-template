@@ -4,6 +4,8 @@ site.name = "MyWebsite"
 language = "zh-Hant-TW"
 locale = "zh_TW"
 generator = "RichDogStudio"
+dir.logs = "var/logs"
+dir.uploads = "var/uploads"
 
 
 [PDO]

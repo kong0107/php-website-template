@@ -1,4 +1,5 @@
 <?php
+require '../lib/init.php';
 while (ob_get_level()) ob_end_clean();
 
 $data = ini_get_all();

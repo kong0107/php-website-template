@@ -23,8 +23,14 @@ function site_log($target, ...$values) {
 	;
 	$time = date('ymd_His', $_SERVER['REQUEST_TIME']) . substr(bcmod($_SERVER['REQUEST_TIME_FLOAT'], 1, 3), 1);
 
+	$filepath = ini_get('error_log');
+	if (empty($filepath) || $filepath === 'syslog') {
+		error_log($text);
+		return strlen($text);
+	}
+
 	return file_put_contents(
-		ini_get('error_log'),
+		$filepath,
 		"$time {$_SERVER['REQUEST_URI']}\n$text\n\n",
 		FILE_APPEND | LOCK_EX
 	);
