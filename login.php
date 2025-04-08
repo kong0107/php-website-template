@@ -16,33 +16,31 @@ if (isset($_GET['logout'])) {
 	exit(0);
 }
 
-/// 載入 Google 設定
-if (! is_readable('./var/client_secret.json')) finish(500, '缺乏設定檔');
-$google = json_file_read('./var/client_secret.json')->web;
+$redirect_uri = 'https://' . $_SERVER['HTTP_HOST'] . CONFIG['site.base'] . CONFIG['google.redirect_uri'];
 assert_session_start();
 
 /// 如果是直接連來這一頁，那就轉去 Google 的登入頁
 if (empty($_GET['state'])) {
 	$state = $_SESSION['csrf'] = base64url_encode(random_bytes(24));
 	if (! empty($_SERVER['HTTP_REFERER'])) {
-	    $parts = parse_url($_SERVER['HTTP_REFERER']);
-	    if ($parts['host'] === $_SERVER['HTTP_HOST']
-	        && ! str_ends_with($parts['path'], 'login.php')
-	    ) {
-	        $referer = substr($_SERVER['HTTP_REFERER'], strpos($_SERVER['HTTP_REFERER'], '/', 10));
-	        $state .= $referer;
-	    }
+		$parts = parse_url($_SERVER['HTTP_REFERER']);
+		if ($parts['host'] === $_SERVER['HTTP_HOST']
+			&& ! str_ends_with($parts['path'], 'login.php')
+		) {
+			$referer = substr($_SERVER['HTTP_REFERER'], strpos($_SERVER['HTTP_REFERER'], '/', 10));
+			$state .= $referer;
+		}
 	} // append redirect target after csrf token
 
-	$query = http_build_query([
-	    'access_type' => 'offline',
-	    'client_id' => $google->client_id,
-	    'redirect_uri' => $google->redirect_uris[0],
-	    'response_type' => 'code',
-	    'scope' => 'openid profile email',
-	    'state' => $state
-	]);
-	header('Location: ' . $google->auth_uri . '?' . $query);
+	$query = http_build_query(array(
+		'access_type' => 'offline',
+		'client_id' => CONFIG['google.id'],
+		'redirect_uri' => $redirect_uri,
+		'response_type' => 'code',
+		'scope' => 'openid profile email',
+		'state' => $state
+	));
+	header("Location: https://accounts.google.com/o/oauth2/auth?$query");
 	exit(0);
 }
 
@@ -56,14 +54,14 @@ if (! str_starts_with($_GET['state'], $csrf)) {
 }
 
 $time = microtime(true);
-$res = fetch_curl($google->token_uri, array(
+$res = fetch_curl('https://oauth2.googleapis.com/token', array(
 	'method' => 'POST',
 	'body' => array(
-	    'grant_type' => 'authorization_code',
-	    'client_id' => $google->client_id,
-	    'client_secret' => $google->client_secret,
-	    'code' => $_GET['code'],
-	    'redirect_uri' => $google->redirect_uris[0]
+		'grant_type' => 'authorization_code',
+		'client_id' => CONFIG['google.id'],
+		'client_secret' => CONFIG['google.secret'],
+		'code' => $_GET['code'],
+		'redirect_uri' => $redirect_uri
 	)
 ));
 site_log('請求權杖花了 %d 毫秒', 1000 * (microtime(true) - $time));

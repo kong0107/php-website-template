@@ -29,10 +29,11 @@ function site_log($target, ...$values) {
 	}
 
 	$time_req = date('ymd_His', $_SERVER['REQUEST_TIME']) . substr($_SERVER['REQUEST_TIME_FLOAT'], 10, 4);
+	$request_uri = substr($_SERVER['REQUEST_URI'], strlen(CONFIG['site.base']) - 1);
 	$time_diff = number_format(1000 * (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']), 3);
 	return file_put_contents(
 		$filepath,
-		"$time_req {$_SERVER['REQUEST_URI']}\n{$time_diff}ms\t$message\n\n",
+		"$time_req $request_uri\n{$time_diff}ms\t$message\n\n",
 		FILE_APPEND | LOCK_EX
 	);
 }
@@ -79,7 +80,7 @@ function exception_handler($ex, $title = '') {
  */
 function shutdown_function() {
 	global $current_user;
-	$str = sprintf('%s + %s bytes sent; mem peak use %s bytes',
+	$str = sprintf('%s + %s bytes sent; mem peak %s bytes',
 		number_format(ob_get_length()),
 		number_format(array_reduce(headers_list(), fn ($sum, $h) => $sum + strlen($h), 0)),
 		number_format(memory_get_peak_usage())
@@ -165,69 +166,3 @@ function finish($status = 204, $title = '', $meta = null) {
 
 	exit_json(array('errors' => array($obj)), $status);
 }
-
-
-
-/******** 輸出東西到前端 ********/
-
-// function use_html_template($page_info = []) {
-// 	global $Get, $Session;
-// 	require __DIR__ . '/../html-header.php';
-// 	echo $page_info['html_body'] ?? '';
-// 	require __DIR__ . '/../html-footer.php';
-// 	exit;
-// }
-
-// function redirect(
-// 	string $url,
-// 	int $seconds = 0
-// ) : void {
-// 	if ($seconds < 0) $seconds = 0;
-// 	if (! $seconds && ! headers_sent()) header('Location: ' . $url);
-// 	use_html_template(array(
-// 	    'title' => '轉址',
-// 	    'html_head' => "
-// 	        <meta http-equiv=\"refresh\" content=\"$seconds; url=$url\">
-// 	        <script>setTimeout(() => location.href = '$url', {$seconds}000);</script>
-// 	    ",
-// 	    'html_body' => "預計於 $seconds 秒後跳轉，或請自行點按前往 <a href=\"$url\">$url</a> 。"
-// 	));
-// }
-
-// /**
-//  * 傳送狀態碼給前端，依 MIME type 輸出適合的錯誤訊息。
-//  * 實際運作於 `error.php` ，與 `.htaccess` 導過去的錯誤共用程式碼。
-//  */
-// function error_output(
-// 	int $status_code = 500,
-// 	string $body = '',
-// 	string $mime_type = 'text/html',
-// 	array $page_info = []
-// ) : void {
-// 	if ($mime_type === 'text/html')
-// 	    if (empty($page_info['html_body'])) $page_info['html_body'] = $body;
-
-// 	$http_response = array(
-// 	    'status' => $status_code,
-// 	    'type' => $mime_type,
-// 	    'body' => $body
-// 	);
-// 	require __DIR__ . '/../error.php';
-// 	exit;
-// }
-
-// /**
-//  * 載入 `vocabulary.csv` 然後留下有翻譯過的，傳回關聯陣列作為字典。
-//  */
-// function load_vocabulary(
-// ) : array {
-// 	$voc = [];
-// 	$lines = explode(chr(10), file_get_contents(__DIR__ . '/../schema/vocabulary.csv'));
-// 	foreach ($lines as $line) {
-// 	    if (! strlen($line)) continue;
-// 	    list($term, $tw) = explode(',', $line);
-// 	    $tw = trim($tw);
-// 	    if (strlen($tw)) $voc[$term] = $tw;
-// 	}
-// 	return $voc;
-// }
