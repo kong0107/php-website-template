@@ -1,6 +1,6 @@
 <?php
 /**
- * Polyfill to use some features in PHP 8.0.
+ * Polyfill to use functions new in PHP 8.0.
  *
  * @see https://www.php.net/manual/en/migration80.new-features.php
  *

@@ -155,11 +155,13 @@ function finish($status = 204, $title = '', $meta = null) {
 		exit(0);
 	}
 
-	/// 若是因錯誤而結束，順便也記一下 cookie 和 session 的狀態
-	$str = '$_COOKIE = ' . json_encode_fake($_COOKIE);
-	if (session_status() === PHP_SESSION_ACTIVE)
-		$str .= "\n\$_SESSION = " . json_encode_fake($_SESSION);
-	site_log($str);
+	/// 若是伺服器錯誤，也記一下 cookie 和 session 的狀態
+	if ($status >= 500) {
+		$message = '$_COOKIE = ' . json_encode_fake($_COOKIE);
+		if (session_status() === PHP_SESSION_ACTIVE)
+			$message .= "\n\$_SESSION = " . json_encode_fake($_SESSION);
+		site_log($message);
+	}
 
 	exit_json(array('errors' => array($obj)), $status);
 }

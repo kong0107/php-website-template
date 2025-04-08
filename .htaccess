@@ -26,12 +26,15 @@ AddCharset utf-8 .txt .html .htm .css .js .json .xml .md
 	RewriteRule wp-inlcudes - [R=404,L]
 
 	# 根目錄中，僅有 favicon.ico 和 robots.txt 是可存取的靜態檔案
-	RewriteRule ^(favicon\.ico|robots\.txt|.*\.php)$ - [L]
+	RewriteRule ^favicon\.ico$ - [L]
+	RewriteRule ^robots\.txt$ - [L]
+	RewriteRule ^[^/]+\.php$ - [L]
+	RewriteRule ^[^/]+$ - [R=404,L] # 這條可能跟下面衝突
 
-	# 找不到就導向 error.php
-	RewriteCond %{REQUEST_FILENAME} !-f
-	RewriteCond %{REQUEST_FILENAME} !-d
-	RewriteRule !^favicon\.ico$ error.php?status=404 [QSA,L]
+	# 找不到就導向特定檔案。適用如 WordPress 的網址設計，或是想用相對路徑指定錯誤頁面。
+	# RewriteCond %{REQUEST_FILENAME} !-f
+	# RewriteCond %{REQUEST_FILENAME} !-d
+	# RewriteRule . error.php [QSA,L]
 </IfModule>
 
 <IfModule headers_module>
