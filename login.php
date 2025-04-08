@@ -6,13 +6,15 @@
  * @see https://developers.google.com/identity/openid-connect/openid-connect
  */
 require_once './lib/init.php';
+$file_tokens = './var/tokens.json';
 
 /// 登出
 if (isset($_GET['logout'])) {
+	/// 在這邊不要引入 user_authn ，而是遍歷整個檔，順手把過期的登入狀態都清一清，好像也不錯？
 	require_once './lib/user_authn.php';
 	set_cookie('at_hash', '', -1, CONFIG['site.base']);
 	if (isset($current_user)) site_log("$current_user->email 主動登出了。");
-	if (isset($_COOKIE['at_hash'])) json_file_set_prop('./var/tokens.json', $_COOKIE['at_hash']);
+	if (isset($_COOKIE['at_hash'])) json_file_set_prop($file_tokens, $_COOKIE['at_hash']);
 	redirect(CONFIG['site.base']);
 }
 
@@ -66,7 +68,7 @@ if (isset($res['errno'])) {
 
 $res['body'] = json_decode($res['body']);
 $id_token = $res['body']->id_token = jwt_decode($res['body']->id_token)->payload;
-json_file_write('./var/last_access_token.json', (object) $res); // only for debug
+json_file_write('./var/last_access_token.json', $res); // only for debug
 
 
 /**
@@ -74,8 +76,7 @@ json_file_write('./var/last_access_token.json', (object) $res); // only for debu
  * Cookie 存活的時間要比 token 長，伺服器才有可能知道要去確認 token 是否過期。
  */
 set_cookie('at_hash', $id_token->at_hash, 3600 * 168, CONFIG['site.base']);
-
-json_file_set_prop('./var/tokens.json', $id_token->at_hash, array(
+json_file_set_prop($file_tokens, $id_token->at_hash, array(
 	// 'access_token' => $res['body']->access_token,
 	'refresh_token' => $res['body']->refresh_token ?? null,
 	'exp' => $id_token->exp,
