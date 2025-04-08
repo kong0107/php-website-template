@@ -20,6 +20,4 @@ pdo.password = null
 [Google]
 google.id = ""
 google.secret = ""
-google.auth_uri = "https://accounts.google.com/o/oauth2/auth"
-google.token_uri = "https://oauth2.googleapis.com/token"
 google.redirect_uri = "login.php"

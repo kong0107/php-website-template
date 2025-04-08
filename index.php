@@ -1,5 +1,5 @@
 <?php
-require_once './lib/init.php';
+require_once './lib/user_authn.php';
 
 require 'html-header.php';
 ?>
