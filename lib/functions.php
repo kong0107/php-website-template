@@ -29,7 +29,9 @@ function site_log($target, ...$values) {
 	}
 
 	$time_req = date('ymd_His', $_SERVER['REQUEST_TIME']) . substr($_SERVER['REQUEST_TIME_FLOAT'], 10, 4);
-	$request_uri = substr($_SERVER['REQUEST_URI'], strlen(CONFIG['site.base']) - 1);
+	$request_uri = defined('CONFIG')
+		? substr($_SERVER['REQUEST_URI'], strlen(CONFIG['site.base']))
+		: $_SERVER['REQUEST_URI'];
 	$time_diff = number_format(1000 * (microtime(true) - $_SERVER['REQUEST_TIME_FLOAT']), 3);
 	return file_put_contents(
 		$filepath,

@@ -13,17 +13,24 @@ AddCharset utf-8 .txt .html .htm .css .js .json .xml .md
 <IfModule rewrite_module>
 	RewriteEngine On
 
-	# 強制 HTTPS ，除了 /.well-knwon/
+	# 強制允許對 /.well-knwon/ 的連線，不會被後面甚至上層目錄的的規則改寫
 	RewriteRule ^\.well-known/ - [END]
+
+	# 擋掉沒有 User-Agent 標頭的連線
+	RewriteCond %{HTTP_USER_AGENT} ^$
+	RewriteRule ^ - [F,END]
+
+	# 強制 HTTPS
 	RewriteCond %{HTTPS} off
 	RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,QSA,L]
 
-	# 禁止連向隱藏目錄
+	# 禁止連向的目錄（常見於惡意爬蟲）
 	RewriteRule (^|/)\. - [R=404,L]
-
-	# 常見的惡意爬蟲
-	RewriteRule wp-admin - [R=404,L]
-	RewriteRule wp-inlcudes - [R=404,L]
+	RewriteRule (^|/)vendor/ - [R=404,L]
+	RewriteRule (^|/)node_modules/ - [R=404,L]
+	RewriteRule (^|/)wp-login - [R=404,L]
+	RewriteRule (^|/)wp-admin - [R=404,L]
+	RewriteRule (^|/)wp-inlcudes - [R=404,L]
 
 	# 根目錄中，僅有 favicon.ico 和 robots.txt 是可存取的靜態檔案
 	RewriteRule ^favicon\.ico$ - [L]

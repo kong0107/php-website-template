@@ -1,6 +1,5 @@
 <?php
 header_remove('X-Powered-By');
-
 require_once __DIR__ . '/functions.php';
 
 set_error_handler('error_handler');
