@@ -94,6 +94,7 @@ function shutdown_function() {
 		if (str_ends_with($user, '@gmail.com')) $user = substr($user, 0, -10);
 	}
 	$request_info = array(
+		'status' => http_response_code(),
 		'user' => $user,
 		'tcp_ip' => $_SERVER['REMOTE_ADDR']
 	);

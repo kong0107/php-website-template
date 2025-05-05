@@ -1,20 +1,14 @@
 AcceptPathInfo Off
 DirectoryIndex index.php index.html
 Options SymLinksIfOwnerMatch
-AddCharset utf-8 .txt .html .htm .css .js .json .xml .md
-
-<Files ".*"> # 禁止連向隱藏檔
-	Require all denied
-</Files>
-<Files "xmlrpc.php">
-	Require all denied
-</Files>
+AddDefaultCharset utf-8
+AddCharset utf-8 .css .js .cjs .mjs .json .xml .md
 
 <IfModule rewrite_module>
 	RewriteEngine On
 
 	# 強制允許對 /.well-knwon/ 的連線，不會被後面甚至上層目錄的的規則改寫
-	RewriteRule ^\.well-known/ - [END]
+	RewriteRule ^\.well-known/acme-challenge/ - [END]
 
 	# 擋掉沒有 User-Agent 標頭的連線
 	RewriteCond %{HTTP_USER_AGENT} ^$
@@ -23,26 +17,60 @@ AddCharset utf-8 .txt .html .htm .css .js .json .xml .md
 	# 強制 HTTPS
 	RewriteCond %{HTTPS} off
 	RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,QSA,L]
-
-	# 禁止連向的目錄（常見於惡意爬蟲）
-	RewriteRule (^|/)\. - [R=404,L]
-	RewriteRule (^|/)vendor/ - [R=404,L]
-	RewriteRule (^|/)node_modules/ - [R=404,L]
-	RewriteRule (^|/)wp-login - [R=404,L]
-	RewriteRule (^|/)wp-admin - [R=404,L]
-	RewriteRule (^|/)wp-inlcudes - [R=404,L]
-
-	# 根目錄中，僅有 favicon.ico 和 robots.txt 是可存取的靜態檔案
-	RewriteRule ^favicon\.ico$ - [L]
-	RewriteRule ^robots\.txt$ - [L]
-	RewriteRule ^[^/]+\.php$ - [L]
-	RewriteRule ^[^/]+$ - [R=404,L] # 這條可能跟下面衝突
-
-	# 找不到就導向特定檔案。適用如 WordPress 的網址設計，或是想用相對路徑指定錯誤頁面。
-	# RewriteCond %{REQUEST_FILENAME} !-f
-	# RewriteCond %{REQUEST_FILENAME} !-d
-	# RewriteRule . error.php [QSA,L]
 </IfModule>
+
+<IfModule alias_module>
+    RedirectMatch 403 /\.(?!well-known/acme-challenge/)
+    RedirectMatch 403 /(?:vendor|node_modules|scss)/
+    RedirectMatch 403 /wp-(?:login|admin|includes)
+	RedirectMatch 403 /.+\.(?:lock|config\.[jt]s)$
+    RedirectMatch 403 /(?:make|Docker|Jenkins|Proc)file$
+	RedirectMatch 403 /(?:wlwmanifest|pom|phpunit)\.xml$
+	RedirectMatch 403 /(?:package|package-lock|tsconfig|cypress|angular)\.json$
+	RedirectMatch 403 /(?:xmlrpc\.php|requirements\.txt|build\.gradle|mkdocs\.yml|pyproject\.toml|pytest\.ini)$
+</IfModule>
+<IfModule !alias_module>
+	<IfModule rewrite_module>
+		RewriteRule (?:^|/)\. - [F,L]
+		RewriteRule (?:^|/)(?:vendor|node_modules|scss)/ - [F,L]
+		RewriteRule (?:^|/)wp-(?:login|admin|includes) - [F,L]
+		RewriteRule ^.+\.(?:lock|config\.[jt]s)$ - [F,L]
+		RewriteRule ^(?:make|Docker|Jenkins|Proc)file$ - [F,L]
+		RewriteRule ^(?:wlwmanifest|pom|phpunit)\.xml$ - [F,L]
+		RewriteRule ^(?:package|package-lock|tsconfig|cypress|angular)\.json$ - [F,L]
+		RewriteRule ^(?:xmlrpc\.php|requirements\.txt|build\.gradle|mkdocs\.yml|pyproject\.toml|pytest\.ini)$ - [F,L]
+	</IfModule>
+	<IfModule !rewrite_module>
+		<Files ".*">
+			Require all denied
+		</Files>
+		<Files "*.lock">
+			Require all denied
+		</Files>
+		<Files "*.config.js">
+			Require all denied
+		</Files>
+		<FilesMatch "^(?:make|Docker|Jenkins|Proc)file$">
+			Require all denied
+		</FilesMatch>
+		<FilesMatch "^(?:wlwmanifest|pom|phpunit)\.xml$">
+			Require all denied
+		</FilesMatch>
+		<FilesMatch "^(?:package|package-lock|tsconfig|cypress|angular)\.json$">
+			Require all denied
+		</FilesMatch>
+		<FilesMatch "^(?:xmlrpc\.php|requirements\.txt|build\.gradle|mkdocs\.yml|pyproject\.toml|pytest\.ini)$">
+			Require all denied
+		</FilesMatch>
+	</IfModule>
+</IfModule>
+
+#<IfModule rewrite_module>
+#	找不到就導向特定檔案。適用如 WordPress 的網址設計，或是想用相對路徑指定錯誤頁面。
+#	RewriteCond %{REQUEST_FILENAME} !-f
+#	RewriteCond %{REQUEST_FILENAME} !-d
+#	RewriteRule . error.php [QSA,L]
+#</IfModule>
 
 <IfModule headers_module>
 	Header always set Strict-Transport-Security max-age=31536000 env=HTTPS
