@@ -2,6 +2,6 @@
 	Require ip 127.0.0.1 ::1
 	Options +Indexes
 </IfModule>
-<IfModule !authz_host_module>
-	Require all denied
-</IfModule>
+#<IfModule !authz_host_module>
+#	Require all denied
+#</IfModule>

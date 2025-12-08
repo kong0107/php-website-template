@@ -82,7 +82,6 @@ function array_all($array, $callback) {
 } // function array_all
 
 
-
 if (! function_exists('bcceil')) {
 function bcceil($num) {
 	$int = bcadd($num, '0', 0);
@@ -93,20 +92,21 @@ function bcceil($num) {
 		default: return bcadd($num, '1', 0);
 	}
 }
-}
+} // function bcceil
 
 
 if (! function_exists('bcfloor')) {
-	function bcfloor($num) {
-		$int = bcadd($num, '0', 0);
-		switch (bccomp($num, $int)) {
-			case 0:
-			case 1:
-				return $int;
-			default: return bcsub($num, '1', 0);
-		}
+function bcfloor($num) {
+	$int = bcadd($num, '0', 0);
+	switch (bccomp($num, $int)) {
+		case 0:
+		case 1:
+			return $int;
+		default: return bcsub($num, '1', 0);
 	}
 }
+} // function bcfloor
+
 
 if (! function_exists('bcdivmod')) {
 function bcdivmod($num1, $num2, $scale = null) {
@@ -120,7 +120,8 @@ function bcdivmod($num1, $num2, $scale = null) {
 		bcmod($num1, $num2, $scale)
 	);
 }
-}
+} // function bcdivmod
+
 
 if (! class_exists('RoundingMode')) {
 class RoundingMode {
@@ -133,7 +134,7 @@ class RoundingMode {
 	public const NegativeInfinity = 6;
 	public const PositiveInfinity = 7;
 }
-}
+}  // class RoundingMode
 
 
 if (! function_exists('bcround')) {
@@ -141,10 +142,10 @@ function bcround($num, $precision = 0, $mode = RoundingMode::HalfAwayFromZero) {
 	if (! preg_match('/^[+-]?[0-9]*(\.[0-9]*)?$/', $num, $matches))
 		throw new ValueError;
 
-
+	// ... tbe
 
 }
-}
+} // function bcround
 
 
 if (! function_exists('fpow')) {
@@ -153,7 +154,7 @@ function fpow($num, $exponent) {
 	if ($num < 0 && fmod($exponent, 1)) return NAN;
 	return $num ** $exponent;
 }
-}
+} // function fpow
 
 
 } // if (PHP_VERSION_ID < 80400)
